@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
     initializeLoadingScreen();
     initializeNavigation();
-    initializeTypingAnimation();
     initializeScrollAnimations();
     initializeParticles();
     initializePortfolioFilters();
@@ -85,50 +84,6 @@ function updateActiveNavLink() {
             link.classList.add('active');
         }
     });
-}
-
-// Typing Animation for Hero Section
-function initializeTypingAnimation() {
-    const typingElement = document.getElementById('typing-text');
-    const texts = [
-        'Technical Marketing Specialist',
-        'B2B Marketing Expert',
-        'B2C Marketing Strategist',
-        'Content Marketing Pro',
-        'Growth Marketing Specialist'
-    ];
-    
-    let textIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    
-    function typeText() {
-        const currentText = texts[textIndex];
-        
-        if (isDeleting) {
-            typingElement.textContent = currentText.substring(0, charIndex - 1);
-            charIndex--;
-        } else {
-            typingElement.textContent = currentText.substring(0, charIndex + 1);
-            charIndex++;
-        }
-        
-        let typeSpeed = isDeleting ? 50 : 100;
-        
-        if (!isDeleting && charIndex === currentText.length) {
-            typeSpeed = 2000; // Pause at end
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            textIndex = (textIndex + 1) % texts.length;
-            typeSpeed = 500; // Pause before next text
-        }
-        
-        setTimeout(typeText, typeSpeed);
-    }
-    
-    // Start typing animation after loading screen
-    setTimeout(typeText, 2500);
 }
 
 // Scroll-triggered animations
