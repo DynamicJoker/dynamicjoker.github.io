@@ -885,6 +885,9 @@ html[data-color-scheme="dark"] {
   align-items: center;
   justify-content: center;
   gap: 5px;
+  flex-wrap: wrap;
+  /* Add a slight delay to trigger pop animation after load */
+  animation: none;
 }
 
 .hero-title .pop {
@@ -892,7 +895,8 @@ html[data-color-scheme="dark"] {
   opacity: 0;
   transform: scale(0.8);
   animation: popIn 0.5s forwards;
-  animation-delay: calc(0.05s * var(--i));
+  animation-delay: calc(0.05s * var(--i) + 0.3s);
+  animation-fill-mode: both;
 }
 
 @keyframes popIn {
