@@ -1319,6 +1319,14 @@ html[data-color-scheme="dark"] {
   border: 1px solid rgba(255, 255, 255, 0.1);
   transition: all var(--animation-speed) var(--animation-curve);
   text-align: left;
+  box-shadow: none;
+}
+
+.timeline-content:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--color-electric-blue);
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 
 .timeline-item--right {
@@ -1332,6 +1340,11 @@ html[data-color-scheme="dark"] {
 }
 
 .timeline-item--right .timeline-content {
+  text-align: right;
+}
+
+.timeline-item--right .timeline-content:hover {
+  /* Keep right alignment on hover */
   text-align: right;
 }
 
