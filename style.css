@@ -1648,3 +1648,13 @@ html[data-color-scheme="dark"] {
   transform: translateY(-2px);
   box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
 }
+
+/* Online dot style */
+.online-dot {
+  color: #22c55e; /* Tailwind green-500 */
+  font-size: 1.2em;
+  vertical-align: middle;
+  margin: 0 0.4em;
+  /* Optionally add a glow for 'online' effect */
+  text-shadow: 0 0 6px #22c55e88;
+}
