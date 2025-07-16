@@ -736,6 +736,13 @@ html[data-color-scheme="dark"] {
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.navbar.scrolled {
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  backdrop-filter: blur(8px);
+  background: rgba(20, 20, 30, 0.85);
+  transition: box-shadow 0.3s, background 0.3s;
+}
+
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -1651,10 +1658,15 @@ html[data-color-scheme="dark"] {
 
 /* Online dot style */
 .online-dot {
-  color: #22c55e; /* Tailwind green-500 */
+  color: #22c55e;
   font-size: 1.2em;
   vertical-align: middle;
   margin: 0 0.4em;
-  /* Optionally add a glow for 'online' effect */
   text-shadow: 0 0 6px #22c55e88;
+  animation: pulseDot 1.2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.3); }
 }

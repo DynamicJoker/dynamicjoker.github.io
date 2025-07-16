@@ -408,10 +408,15 @@ function closeNotification(notification) {
 
 // Parallax effect for hero section
 window.addEventListener('scroll', () => {
+    const navbar = document.getElementById('navbar');
+    if (window.scrollY > 40) {
+        navbar.classList.add('scrolled');
+    } else {
+        navbar.classList.remove('scrolled');
+    }
     const scrolled = window.pageYOffset;
     const hero = document.querySelector('.hero');
     const heroBackground = document.querySelector('.hero-background');
-    
     if (hero && heroBackground) {
         const rate = scrolled * -0.5;
         heroBackground.style.transform = `translateY(${rate}px)`;
