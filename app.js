@@ -306,11 +306,10 @@ function initializeSmoothScrolling() {
 function initializeTypingAnimation() {
     const typingElement = document.getElementById('typing-text');
     const texts = [
-        'Technical Marketing Specialist',
-        'B2B Marketing Expert',
-        'B2C Marketing Strategist',
-        'Content Marketing Pro',
-        'Growth Marketing Specialist'
+        'Technical Marketing',
+        'B2B & B2C Narratives',
+        'Inbound Marketing Strategy',
+        'Content Marketing Wizard'
     ];
     
     let textIndex = 0;
