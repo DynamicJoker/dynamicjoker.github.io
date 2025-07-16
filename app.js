@@ -328,7 +328,7 @@ function initializeTypingAnimation() {
             charIndex++;
         }
         
-        let typeSpeed = isDeleting ? 50 : 100;
+        let typeSpeed = isDeleting ? 25 : 50;
         
         if (!isDeleting && charIndex === currentText.length) {
             typeSpeed = 2000; // Pause at end
