@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeContactForm();
     initializeSmoothScrolling();
     initializeTypingAnimation();
+    enableLogoBarDragScroll();
 });
 
 // Loading Screen Animation
@@ -523,3 +524,54 @@ preloadCriticalResources();
 
 // Final initialization check
 console.log('Jerry James Portfolio initialized successfully! 🚀');
+
+function enableLogoBarDragScroll() {
+    const wrapper = document.querySelector('.logo-bar-wrapper');
+    if (!wrapper) return;
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    // Pause animation on mousedown
+    wrapper.addEventListener('mousedown', (e) => {
+        isDown = true;
+        wrapper.classList.add('dragging');
+        startX = e.pageX - wrapper.offsetLeft;
+        scrollLeft = wrapper.scrollLeft;
+        wrapper.style.cursor = 'grabbing';
+    });
+    wrapper.addEventListener('mouseleave', () => {
+        isDown = false;
+        wrapper.classList.remove('dragging');
+        wrapper.style.cursor = '';
+    });
+    wrapper.addEventListener('mouseup', () => {
+        isDown = false;
+        wrapper.classList.remove('dragging');
+        wrapper.style.cursor = '';
+    });
+    wrapper.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - wrapper.offsetLeft;
+        const walk = (x - startX) * 1.2; // scroll-fast
+        wrapper.scrollLeft = scrollLeft - walk;
+    });
+    // Touch support
+    wrapper.addEventListener('touchstart', (e) => {
+        isDown = true;
+        wrapper.classList.add('dragging');
+        startX = e.touches[0].pageX - wrapper.offsetLeft;
+        scrollLeft = wrapper.scrollLeft;
+    });
+    wrapper.addEventListener('touchend', () => {
+        isDown = false;
+        wrapper.classList.remove('dragging');
+    });
+    wrapper.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const x = e.touches[0].pageX - wrapper.offsetLeft;
+        const walk = (x - startX) * 1.2;
+        wrapper.scrollLeft = scrollLeft - walk;
+    });
+}
