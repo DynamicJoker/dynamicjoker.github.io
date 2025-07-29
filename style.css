@@ -1681,15 +1681,12 @@ html[data-color-scheme="dark"] {
   width: 100%;
   overflow: hidden;
   position: relative;
-  display: flex;
+  white-space: nowrap;
 }
 .logo-bar {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 48px;
-}
-.logo-bar-wrapper {
-  /* Animate the wrapper for seamless loop */
   animation: scroll-logos 30s linear infinite;
 }
 .logo-img {
@@ -1709,4 +1706,12 @@ html[data-color-scheme="dark"] {
 @media (max-width: 600px) {
   .logo-img { height: 32px; }
   .logo-bar { gap: 24px; }
+}
+
+.logo-bar.dragging {
+  animation-play-state: paused !important;
+  cursor: grabbing;
+}
+.logo-bar-wrapper.dragging {
+  cursor: grabbing;
 }

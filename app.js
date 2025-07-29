@@ -527,51 +527,74 @@ console.log('Jerry James Portfolio initialized successfully! 🚀');
 
 function enableLogoBarDragScroll() {
     const wrapper = document.querySelector('.logo-bar-wrapper');
-    if (!wrapper) return;
-    let isDown = false;
-    let startX;
-    let scrollLeft;
+    const bar = wrapper ? wrapper.querySelector('.logo-bar') : null;
+    if (!wrapper || !bar) return;
 
-    // Pause animation on mousedown
+    let isDragging = false;
+    let startX = 0;
+    let startTranslate = 0;
+
+    function getTranslateX() {
+        const style = window.getComputedStyle(bar);
+        const matrix = style.transform === 'none' ? {m41: 0} : new WebKitCSSMatrix(style.transform);
+        return matrix.m41;
+    }
+
+    // Mouse events
     wrapper.addEventListener('mousedown', (e) => {
-        isDown = true;
+        isDragging = true;
         wrapper.classList.add('dragging');
-        startX = e.pageX - wrapper.offsetLeft;
-        scrollLeft = wrapper.scrollLeft;
-        wrapper.style.cursor = 'grabbing';
+        bar.classList.add('dragging');
+        bar.style.animationPlayState = 'paused';
+        startX = e.pageX;
+        startTranslate = getTranslateX() || 0;
+        document.body.style.userSelect = 'none';
     });
-    wrapper.addEventListener('mouseleave', () => {
-        isDown = false;
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+        const dx = e.pageX - startX;
+        let newTranslate = startTranslate + dx;
+        const barWidth = bar.scrollWidth / 2;
+        if (newTranslate < -barWidth) newTranslate += barWidth;
+        if (newTranslate > 0) newTranslate -= barWidth;
+        bar.style.transform = `translateX(${newTranslate}px)`;
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+        isDragging = false;
         wrapper.classList.remove('dragging');
-        wrapper.style.cursor = '';
+        bar.classList.remove('dragging');
+        bar.style.animationPlayState = '';
+        document.body.style.userSelect = '';
     });
-    wrapper.addEventListener('mouseup', () => {
-        isDown = false;
-        wrapper.classList.remove('dragging');
-        wrapper.style.cursor = '';
-    });
-    wrapper.addEventListener('mousemove', (e) => {
-        if (!isDown) return;
-        e.preventDefault();
-        const x = e.pageX - wrapper.offsetLeft;
-        const walk = (x - startX) * 1.2; // scroll-fast
-        wrapper.scrollLeft = scrollLeft - walk;
-    });
-    // Touch support
+
+    // Touch events
     wrapper.addEventListener('touchstart', (e) => {
-        isDown = true;
+        isDragging = true;
         wrapper.classList.add('dragging');
-        startX = e.touches[0].pageX - wrapper.offsetLeft;
-        scrollLeft = wrapper.scrollLeft;
+        bar.classList.add('dragging');
+        bar.style.animationPlayState = 'paused';
+        startX = e.touches[0].pageX;
+        startTranslate = getTranslateX() || 0;
     });
-    wrapper.addEventListener('touchend', () => {
-        isDown = false;
+
+    window.addEventListener('touchmove', (e) => {
+        if (!isDragging) return;
+        const dx = e.touches[0].pageX - startX;
+        let newTranslate = startTranslate + dx;
+        const barWidth = bar.scrollWidth / 2;
+        if (newTranslate < -barWidth) newTranslate += barWidth;
+        if (newTranslate > 0) newTranslate -= barWidth;
+        bar.style.transform = `translateX(${newTranslate}px)`;
+    });
+
+    window.addEventListener('touchend', () => {
+        if (!isDragging) return;
+        isDragging = false;
         wrapper.classList.remove('dragging');
-    });
-    wrapper.addEventListener('touchmove', (e) => {
-        if (!isDown) return;
-        const x = e.touches[0].pageX - wrapper.offsetLeft;
-        const walk = (x - startX) * 1.2;
-        wrapper.scrollLeft = scrollLeft - walk;
+        bar.classList.remove('dragging');
+        bar.style.animationPlayState = '';
     });
 }
