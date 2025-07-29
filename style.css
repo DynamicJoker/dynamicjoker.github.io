@@ -1681,11 +1681,15 @@ html[data-color-scheme="dark"] {
   width: 100%;
   overflow: hidden;
   position: relative;
+  display: flex;
 }
 .logo-bar {
   display: flex;
   align-items: center;
   gap: 48px;
+}
+.logo-bar-wrapper {
+  /* Animate the wrapper for seamless loop */
   animation: scroll-logos 30s linear infinite;
 }
 .logo-img {
