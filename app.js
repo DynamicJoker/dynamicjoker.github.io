@@ -526,19 +526,45 @@ preloadCriticalResources();
 console.log('Jerry James Portfolio initialized successfully! 🚀');
 
 function enableLogoBarDragScroll() {
-    const wrapper = document.querySelector('.logo-bar-wrapper');
-    const bar = wrapper ? wrapper.querySelector('.logo-bar') : null;
-    if (!wrapper || !bar) return;
+    try {
+        const wrapper = document.querySelector('.logo-bar-wrapper');
+        const bar = wrapper ? wrapper.querySelector('.logo-bar') : null;
+        
+        if (!wrapper || !bar) {
+            console.warn('Logo bar elements not found - drag scroll disabled');
+            return;
+        }
 
-    let isDragging = false;
-    let startX = 0;
-    let startTranslate = 0;
+        let isDragging = false;
+        let startX = 0;
+        let startTranslate = 0;
 
-    function getTranslateX() {
-        const style = window.getComputedStyle(bar);
-        const matrix = style.transform === 'none' ? {m41: 0} : new WebKitCSSMatrix(style.transform);
-        return matrix.m41;
-    }
+        // Cross-browser compatible function to get translateX value
+        function getTranslateX() {
+            const style = window.getComputedStyle(bar);
+            const transform = style.transform;
+            
+            if (transform === 'none' || transform === '') return 0;
+            
+            // Try modern DOMMatrix first
+            if (window.DOMMatrix) {
+                try {
+                    const matrix = new DOMMatrix(transform);
+                    return matrix.m41;
+                } catch (e) {
+                    // Fall through to manual parsing
+                }
+            }
+            
+            // Fallback: Parse transform string manually
+            const match = transform.match(/translateX?\(([^)]+)\)/);
+            if (match) {
+                const value = parseFloat(match[1]);
+                return isNaN(value) ? 0 : value;
+            }
+            
+            return 0;
+        }
 
     // Mouse events
     wrapper.addEventListener('mousedown', (e) => {
@@ -597,4 +623,8 @@ function enableLogoBarDragScroll() {
         bar.classList.remove('dragging');
         bar.style.animationPlayState = '';
     });
+    
+    } catch (error) {
+        console.error('Logo bar drag scroll initialization failed:', error);
+    }
 }
