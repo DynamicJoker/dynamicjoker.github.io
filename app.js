@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSmoothScrolling();
     initializeTypingAnimation();
     enableLogoBarDragScroll();
+    updateYearsExperience();
 });
 
 // Loading Screen Animation
@@ -344,6 +345,16 @@ function initializeTypingAnimation() {
     
     // Start typing animation after loading screen
     setTimeout(typeText, 2500);
+}
+
+// Calculate and update years of experience in hero-subtitle
+function updateYearsExperience() {
+    const start = new Date(2014, 7); // August is month 7 (0-indexed)
+    const now = new Date();
+    let years = now.getFullYear() - start.getFullYear();
+    if (now.getMonth() < 7) years--;
+    const el = document.getElementById('years-experience');
+    if (el) el.textContent = years;
 }
 
 // Notification system
