@@ -1681,14 +1681,34 @@ html[data-color-scheme="dark"] {
   width: 100%;
   overflow: hidden;
   position: relative;
-  white-space: nowrap;
+}
+.logo-bar-wrapper.dragging {
+  cursor: grabbing;
+}
+
+
+/* New Logo Bar container - Fix #3 */
+.logo-bar-scroller {
+    display: flex;
+    width: max-content; /* Make the scroller as wide as its content */
+    animation: scroll-logos 30s linear infinite;
+}
+.logo-bar-scroller.dragging {
+    animation-play-state: paused !important;
+    cursor: grabbing;
 }
 .logo-bar {
-  display: inline-flex;
+  /* It no longer needs the animation */
+  display: flex;
   align-items: center;
-  gap: 48px;
-  animation: scroll-logos 30s linear infinite;
+  flex-shrink: 0; /* Prevent the logo sets from shrinking */
+
+  /* --- Scaling Fix here --- */
+  width: 100vw; /* Force each logo set to span the full viewport width */
+  justify-content: space-around; /* Evenly distribute the logos across the screen */
+  gap: 48px; /* Minimum gap between logos */
 }
+
 .logo-img {
   height: 48px;
   filter: grayscale(1) brightness(0.8);
@@ -1699,19 +1719,16 @@ html[data-color-scheme="dark"] {
   filter: grayscale(0) brightness(1);
   opacity: 1;
 }
+
+/* The animation now correctly targets the scroller */
 @keyframes scroll-logos {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); } /* This moves the scroller by the width of one .logo-bar (100vw) */
 }
+
 @media (max-width: 600px) {
   .logo-img { height: 32px; }
   .logo-bar { gap: 24px; }
 }
 
-.logo-bar.dragging {
-  animation-play-state: paused !important;
-  cursor: grabbing;
-}
-.logo-bar-wrapper.dragging {
-  cursor: grabbing;
-}
+/* REMOVED .logo-bar.dragging - replaced by .logo-bar-scroller.dragging */

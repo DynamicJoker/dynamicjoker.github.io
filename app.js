@@ -519,27 +519,12 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Add preload for better performance
-function preloadCriticalResources() {
-    // Preload critical CSS variables and fonts
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = 'https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2';
-    link.as = 'font';
-    link.type = 'font/woff2';
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
-}
-
-preloadCriticalResources();
-
-// Final initialization check
-console.log('Jerry James Portfolio initialized successfully! 🚀');
-
+// Enable drag scrolling for logo bar - Fix #3
 function enableLogoBarDragScroll() {
     try {
         const wrapper = document.querySelector('.logo-bar-wrapper');
-        const bar = wrapper ? wrapper.querySelector('.logo-bar') : null;
+        // The element we drag is now the 'scroller'
+        const bar = wrapper ? wrapper.querySelector('.logo-bar-scroller') : null;
         
         if (!wrapper || !bar) {
             console.warn('Logo bar elements not found - drag scroll disabled');
@@ -557,7 +542,6 @@ function enableLogoBarDragScroll() {
             
             if (transform === 'none' || transform === '') return 0;
             
-            // Try modern DOMMatrix first
             if (window.DOMMatrix) {
                 try {
                     const matrix = new DOMMatrix(transform);
@@ -567,7 +551,6 @@ function enableLogoBarDragScroll() {
                 }
             }
             
-            // Fallback: Parse transform string manually
             const match = transform.match(/translateX?\(([^)]+)\)/);
             if (match) {
                 const value = parseFloat(match[1]);
@@ -577,65 +560,82 @@ function enableLogoBarDragScroll() {
             return 0;
         }
 
-    // Mouse events
-    wrapper.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        wrapper.classList.add('dragging');
-        bar.classList.add('dragging');
-        bar.style.animationPlayState = 'paused';
-        startX = e.pageX;
-        startTranslate = getTranslateX() || 0;
-        document.body.style.userSelect = 'none';
-    });
+        // Mouse events
+        wrapper.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            wrapper.classList.add('dragging');
+            bar.classList.add('dragging'); // Target the bar (scroller)
+            bar.style.animationPlayState = 'paused';
+            startX = e.pageX;
+            startTranslate = getTranslateX() || 0;
+            document.body.style.userSelect = 'none';
+        });
 
-    window.addEventListener('mousemove', (e) => {
-        if (!isDragging) return;
-        const dx = e.pageX - startX;
-        let newTranslate = startTranslate + dx;
-        const barWidth = bar.scrollWidth / 2;
-        if (newTranslate < -barWidth) newTranslate += barWidth;
-        if (newTranslate > 0) newTranslate -= barWidth;
-        bar.style.transform = `translateX(${newTranslate}px)`;
-    });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const dx = e.pageX - startX;
+            let newTranslate = startTranslate + dx;
+            const barWidth = bar.scrollWidth / 2;
+            if (newTranslate < -barWidth) newTranslate += barWidth;
+            if (newTranslate > 0) newTranslate -= barWidth;
+            bar.style.transform = `translateX(${newTranslate}px)`;
+        });
 
-    window.addEventListener('mouseup', () => {
-        if (!isDragging) return;
-        isDragging = false;
-        wrapper.classList.remove('dragging');
-        bar.classList.remove('dragging');
-        bar.style.animationPlayState = '';
-        document.body.style.userSelect = '';
-    });
+        window.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            wrapper.classList.remove('dragging');
+            bar.classList.remove('dragging'); // Target the bar (scroller)
+            bar.style.animationPlayState = '';
+            document.body.style.userSelect = '';
+        });
 
-    // Touch events
-    wrapper.addEventListener('touchstart', (e) => {
-        isDragging = true;
-        wrapper.classList.add('dragging');
-        bar.classList.add('dragging');
-        bar.style.animationPlayState = 'paused';
-        startX = e.touches[0].pageX;
-        startTranslate = getTranslateX() || 0;
-    });
+        // Touch events
+        wrapper.addEventListener('touchstart', (e) => {
+            isDragging = true;
+            wrapper.classList.add('dragging');
+            bar.classList.add('dragging'); // Target the bar (scroller)
+            bar.style.animationPlayState = 'paused';
+            startX = e.touches[0].pageX;
+            startTranslate = getTranslateX() || 0;
+        });
 
-    window.addEventListener('touchmove', (e) => {
-        if (!isDragging) return;
-        const dx = e.touches[0].pageX - startX;
-        let newTranslate = startTranslate + dx;
-        const barWidth = bar.scrollWidth / 2;
-        if (newTranslate < -barWidth) newTranslate += barWidth;
-        if (newTranslate > 0) newTranslate -= barWidth;
-        bar.style.transform = `translateX(${newTranslate}px)`;
-    });
+        window.addEventListener('touchmove', (e) => {
+            if (!isDragging) return;
+            const dx = e.touches[0].pageX - startX;
+            let newTranslate = startTranslate + dx;
+            const barWidth = bar.scrollWidth / 2;
+            if (newTranslate < -barWidth) newTranslate += barWidth;
+            if (newTranslate > 0) newTranslate -= barWidth;
+            bar.style.transform = `translateX(${newTranslate}px)`;
+        });
 
-    window.addEventListener('touchend', () => {
-        if (!isDragging) return;
-        isDragging = false;
-        wrapper.classList.remove('dragging');
-        bar.classList.remove('dragging');
-        bar.style.animationPlayState = '';
-    });
+        window.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            wrapper.classList.remove('dragging');
+            bar.classList.remove('dragging'); // Target the bar (scroller)
+            bar.style.animationPlayState = '';
+        });
     
     } catch (error) {
         console.error('Logo bar drag scroll initialization failed:', error);
     }
 }
+
+// Add preload for better performance
+function preloadCriticalResources() {
+    // Preload critical CSS variables and fonts
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.href = 'https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2';
+    link.as = 'font';
+    link.type = 'font/woff2';
+    link.crossOrigin = 'anonymous';
+    document.head.appendChild(link);
+}
+
+preloadCriticalResources();
+
+// Final initialization check
+console.log('Jerry James Portfolio initialized successfully! 🚀');
