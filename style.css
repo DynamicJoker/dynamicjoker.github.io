@@ -1686,17 +1686,23 @@ html[data-color-scheme="dark"] {
   cursor: grabbing;
 }
 
-
 /* New Logo Bar container - Fix #3 */
+
 .logo-bar-scroller {
     display: flex;
-    width: max-content; /* Make the scroller as wide as its content */
+    width: max-content;
+    /* The animation will now be applied conditionally below */
+}
+/* Click and Drag Fix */
+/* Only apply the animation when the user is NOT dragging */
+.logo-bar-scroller:not(.dragging) {
     animation: scroll-logos 30s linear infinite;
 }
+
 .logo-bar-scroller.dragging {
-    animation-play-state: paused !important;
     cursor: grabbing;
 }
+
 .logo-bar {
   /* It no longer needs the animation */
   display: flex;
