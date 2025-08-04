@@ -541,10 +541,20 @@ function enableLogoBarDragScroll() {
         const animate = () => {
             if (!isDragging) {
                 currentTranslate -= speed / 60;
+                
                 const loopWidth = bar.scrollWidth / 2;
+                // Check for wrapping in BOTH directions.
+                
+                // 1. If it goes too far left, wrap it to the beginning.
                 if (currentTranslate <= -loopWidth) {
                     currentTranslate += loopWidth;
                 }
+                
+                // 2. If it goes too far right (from dragging), wrap it to the end.
+                if (currentTranslate > 0) {
+                    currentTranslate -= loopWidth;
+                }
+                
                 bar.style.transform = `translateX(${currentTranslate}px)`;
             }
             animationFrameId = requestAnimationFrame(animate);
@@ -571,31 +581,27 @@ function enableLogoBarDragScroll() {
             isDragging = false;
             wrapper.classList.remove('dragging');
             bar.classList.remove('dragging');
+            
+            // Normalize the final position to keep the loop clean.
             const loopWidth = bar.scrollWidth / 2;
             currentTranslate = currentTranslate % loopWidth;
+
             document.body.style.userSelect = '';
         };
 
-        // --- Attach Listeners (with the fix) ---
         wrapper.addEventListener('mousedown', (e) => {
-            // --- FIX: Prevent default browser drag behavior ---
             e.preventDefault();
             onDragStart(e.pageX);
         });
-        
         window.addEventListener('mousemove', (e) => {
             onDragMove(e.pageX);
         });
-
         window.addEventListener('mouseup', onDragEnd);
         window.addEventListener('mouseleave', onDragEnd);
 
         wrapper.addEventListener('touchstart', (e) => {
-            // --- FIX: Prevent default touch actions (like page scroll) ---
-            // Note: passive: false is required for preventDefault() to work in touch events
             onDragStart(e.touches[0].pageX);
-        }, { passive: true }); // Keep this passive for smooth scrolling on touch devices
-
+        }, { passive: true });
         window.addEventListener('touchmove', (e) => {
              if (isDragging) {
                 onDragMove(e.touches[0].pageX)
