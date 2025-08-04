@@ -519,7 +519,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Enable drag scrolling for logo bar - Fix #5
+// Enable drag scrolling for logo bar - Fix #5 (Working)
 function enableLogoBarDragScroll() {
     try {
         const wrapper = document.querySelector('.logo-bar-wrapper');
@@ -530,48 +530,39 @@ function enableLogoBarDragScroll() {
             return;
         }
 
-        // --- State Variables ---
         let isDragging = false;
         let startX = 0;
-        let currentTranslate = 0; // The master position of the bar
-        let startTranslateOnDrag = 0; // The position when a drag starts
+        let currentTranslate = 0;
+        let startTranslateOnDrag = 0;
         let animationFrameId = null;
 
-        // --- Animation Logic ---
         const speed = 50; // Pixels per second
 
         const animate = () => {
             if (!isDragging) {
-                // Move the bar based on time elapsed
-                currentTranslate -= speed / 60; // Assuming 60fps
-                
-                // Reset to maintain the infinite loop
+                currentTranslate -= speed / 60;
                 const loopWidth = bar.scrollWidth / 2;
                 if (currentTranslate <= -loopWidth) {
                     currentTranslate += loopWidth;
                 }
-                
                 bar.style.transform = `translateX(${currentTranslate}px)`;
             }
             animationFrameId = requestAnimationFrame(animate);
         };
         
-        // --- Event Handlers ---
         const onDragStart = (pageX) => {
             isDragging = true;
             wrapper.classList.add('dragging');
             bar.classList.add('dragging');
-            
             startX = pageX;
-            startTranslateOnDrag = currentTranslate; // Lock in the position when drag starts
-            
+            startTranslateOnDrag = currentTranslate;
             document.body.style.userSelect = 'none';
         };
         
         const onDragMove = (pageX) => {
             if (!isDragging) return;
             const dx = pageX - startX;
-            currentTranslate = startTranslateOnDrag + dx; // Calculate new position from the start of the drag
+            currentTranslate = startTranslateOnDrag + dx;
             bar.style.transform = `translateX(${currentTranslate}px)`;
         };
         
@@ -580,26 +571,38 @@ function enableLogoBarDragScroll() {
             isDragging = false;
             wrapper.classList.remove('dragging');
             bar.classList.remove('dragging');
-
-            // --- Seamlessly resume animation ---
-            // This ensures the loop continues correctly without jumping
             const loopWidth = bar.scrollWidth / 2;
             currentTranslate = currentTranslate % loopWidth;
-
             document.body.style.userSelect = '';
         };
 
-        // --- Attach Listeners ---
-        wrapper.addEventListener('mousedown', (e) => onDragStart(e.pageX));
-        window.addEventListener('mousemove', (e) => onDragMove(e.pageX));
-        window.addEventListener('mouseup', onDragEnd);
-        window.addEventListener('mouseleave', onDragEnd); // Also stop if mouse leaves window
+        // --- Attach Listeners (with the fix) ---
+        wrapper.addEventListener('mousedown', (e) => {
+            // --- FIX: Prevent default browser drag behavior ---
+            e.preventDefault();
+            onDragStart(e.pageX);
+        });
+        
+        window.addEventListener('mousemove', (e) => {
+            onDragMove(e.pageX);
+        });
 
-        wrapper.addEventListener('touchstart', (e) => onDragStart(e.touches[0].pageX), { passive: true });
-        window.addEventListener('touchmove', (e) => onDragMove(e.touches[0].pageX));
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('mouseleave', onDragEnd);
+
+        wrapper.addEventListener('touchstart', (e) => {
+            // --- FIX: Prevent default touch actions (like page scroll) ---
+            // Note: passive: false is required for preventDefault() to work in touch events
+            onDragStart(e.touches[0].pageX);
+        }, { passive: true }); // Keep this passive for smooth scrolling on touch devices
+
+        window.addEventListener('touchmove', (e) => {
+             if (isDragging) {
+                onDragMove(e.touches[0].pageX)
+             }
+        });
         window.addEventListener('touchend', onDragEnd);
         
-        // --- Start the animation ---
         animate();
 
     } catch (error) {
