@@ -519,7 +519,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Enable drag scrolling for logo bar - Fix #4
+// Enable drag scrolling for logo bar - Fix #5
 function enableLogoBarDragScroll() {
     try {
         const wrapper = document.querySelector('.logo-bar-wrapper');
@@ -530,82 +530,78 @@ function enableLogoBarDragScroll() {
             return;
         }
 
+        // --- State Variables ---
         let isDragging = false;
         let startX = 0;
-        let startTranslate = 0;
+        let currentTranslate = 0; // The master position of the bar
+        let startTranslateOnDrag = 0; // The position when a drag starts
+        let animationFrameId = null;
 
-        function getTranslateX() {
-            const style = window.getComputedStyle(bar);
-            const transform = style.transform;
-            if (transform === 'none' || transform === '') return 0;
-            if (window.DOMMatrix) {
-                try {
-                    return new DOMMatrix(transform).m41;
-                } catch (e) {}
+        // --- Animation Logic ---
+        const speed = 50; // Pixels per second
+
+        const animate = () => {
+            if (!isDragging) {
+                // Move the bar based on time elapsed
+                currentTranslate -= speed / 60; // Assuming 60fps
+                
+                // Reset to maintain the infinite loop
+                const loopWidth = bar.scrollWidth / 2;
+                if (currentTranslate <= -loopWidth) {
+                    currentTranslate += loopWidth;
+                }
+                
+                bar.style.transform = `translateX(${currentTranslate}px)`;
             }
-            const match = transform.match(/translateX?\(([^)]+)\)/);
-            return match ? parseFloat(match[1]) || 0 : 0;
-        }
-
-        // Mouse events
-        wrapper.addEventListener('mousedown', (e) => {
+            animationFrameId = requestAnimationFrame(animate);
+        };
+        
+        // --- Event Handlers ---
+        const onDragStart = (pageX) => {
             isDragging = true;
             wrapper.classList.add('dragging');
             bar.classList.add('dragging');
-            // REMOVED: bar.style.animationPlayState = 'paused';
-            startX = e.pageX;
-            startTranslate = getTranslateX() || 0;
+            
+            startX = pageX;
+            startTranslateOnDrag = currentTranslate; // Lock in the position when drag starts
+            
             document.body.style.userSelect = 'none';
-        });
-
-        window.addEventListener('mousemove', (e) => {
+        };
+        
+        const onDragMove = (pageX) => {
             if (!isDragging) return;
-            e.preventDefault(); // Prevent accidental text selection
-            const dx = e.pageX - startX;
-            let newTranslate = startTranslate + dx;
-            const barWidth = bar.scrollWidth / 2;
-            if (newTranslate < -barWidth) newTranslate += barWidth;
-            if (newTranslate > 0) newTranslate -= barWidth;
-            bar.style.transform = `translateX(${newTranslate}px)`;
-        });
-
-        window.addEventListener('mouseup', () => {
+            const dx = pageX - startX;
+            currentTranslate = startTranslateOnDrag + dx; // Calculate new position from the start of the drag
+            bar.style.transform = `translateX(${currentTranslate}px)`;
+        };
+        
+        const onDragEnd = () => {
             if (!isDragging) return;
             isDragging = false;
             wrapper.classList.remove('dragging');
             bar.classList.remove('dragging');
-            // REMOVED: bar.style.animationPlayState = '';
+
+            // --- Seamlessly resume animation ---
+            // This ensures the loop continues correctly without jumping
+            const loopWidth = bar.scrollWidth / 2;
+            currentTranslate = currentTranslate % loopWidth;
+
             document.body.style.userSelect = '';
-        });
+        };
 
-        // Touch events
-        wrapper.addEventListener('touchstart', (e) => {
-            isDragging = true;
-            wrapper.classList.add('dragging');
-            bar.classList.add('dragging');
-            // REMOVED: bar.style.animationPlayState = 'paused';
-            startX = e.touches[0].pageX;
-            startTranslate = getTranslateX() || 0;
-        });
+        // --- Attach Listeners ---
+        wrapper.addEventListener('mousedown', (e) => onDragStart(e.pageX));
+        window.addEventListener('mousemove', (e) => onDragMove(e.pageX));
+        window.addEventListener('mouseup', onDragEnd);
+        window.addEventListener('mouseleave', onDragEnd); // Also stop if mouse leaves window
 
-        window.addEventListener('touchmove', (e) => {
-            if (!isDragging) return;
-            const dx = e.touches[0].pageX - startX;
-            let newTranslate = startTranslate + dx;
-            const barWidth = bar.scrollWidth / 2;
-            if (newTranslate < -barWidth) newTranslate += barWidth;
-            if (newTranslate > 0) newTranslate -= barWidth;
-            bar.style.transform = `translateX(${newTranslate}px)`;
-        });
+        wrapper.addEventListener('touchstart', (e) => onDragStart(e.touches[0].pageX), { passive: true });
+        window.addEventListener('touchmove', (e) => onDragMove(e.touches[0].pageX));
+        window.addEventListener('touchend', onDragEnd);
+        
+        // --- Start the animation ---
+        animate();
 
-        window.addEventListener('touchend', () => {
-            if (!isDragging) return;
-            isDragging = false;
-            wrapper.classList.remove('dragging');
-            bar.classList.remove('dragging');
-            // REMOVED: bar.style.animationPlayState = '';
-        });
-    
     } catch (error) {
         console.error('Logo bar drag scroll initialization failed:', error);
     }

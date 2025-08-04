@@ -1686,18 +1686,14 @@ html[data-color-scheme="dark"] {
   cursor: grabbing;
 }
 
-/* New Logo Bar container - Fix #3 */
+/* New Logo Bar container - Fix #5 */
 
 .logo-bar-scroller {
     display: flex;
     width: max-content;
-    /* The animation will now be applied conditionally below */
 }
-/* Click and Drag Fix */
-/* Only apply the animation when the user is NOT dragging */
-.logo-bar-scroller:not(.dragging) {
-    animation: scroll-logos 30s linear infinite;
-}
+
+/* Deleted animation handling from CSS because headache */
 
 .logo-bar-scroller.dragging {
     cursor: grabbing;
@@ -1727,11 +1723,6 @@ html[data-color-scheme="dark"] {
 }
 
 /* The animation now correctly targets the scroller */
-@keyframes scroll-logos {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); } /* This moves the scroller by the width of one .logo-bar (100vw) */
-}
-
 @media (max-width: 600px) {
   .logo-img { height: 32px; }
   .logo-bar { gap: 24px; }
