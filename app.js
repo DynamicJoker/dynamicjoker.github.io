@@ -243,6 +243,7 @@ function initializeHeroVisuals() {
                     break;
                 case 'ACTIVE':
                     currentX = lerp(currentX, targetX, TRANSITION_SPEED * 2); // Follow a bit faster
+                    currentY = lerp(currentY, targetY, TRANSITION_SPEED * 2);
                     break;
             }
         }
