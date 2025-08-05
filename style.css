@@ -856,23 +856,22 @@ html[data-color-scheme="dark"] {
 .drip {
     position: absolute;
     background-color: rgba(0, 108, 204, 0.3);
-    border-radius: 50%;
-    animation: fall 3s ease-in forwards;
+    border-radius: 50% 50% 50% 20%;
+    transform: rotate(45deg);
+    
     z-index: 1;
-    /* Critical: Drips should not be interactive */
     pointer-events: none;
+    animation: fall 3s ease-in forwards;
 }
 
 @keyframes fall {
     from {
-        /* Start fully opaque */
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: rotate(45deg) translateY(0) scale(1);
     }
     to {
-        /* Fall downwards, shrink, and fade out completely */
         opacity: 0;
-        transform: translateY(200px) scale(0.5);
+        transform: rotate(45deg) translateY(200px) scale(0.5);
     }
 }
 

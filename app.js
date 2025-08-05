@@ -214,16 +214,31 @@ function initializeHeroVisuals() {
         drip.style.width = `${size}px`;
         drip.style.height = `${size}px`;
 
-        const angle = Math.PI * Math.random();
-        const radius = Math.random() * BLOB_RADIUS * 0.8;
-        drip.style.left = `${currentX + Math.cos(angle) * radius}px`;
-        drip.style.top = `${currentY + Math.sin(angle) * radius}px`;
+        // Get current shape of blob
+        const points = [];
+        for (let i = 0; i < BLOB_POINTS; i++) {
+            const angle = (i / BLOB_POINTS) * Math.PI * 2;
+            const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
+            points.push({
+                x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
+                y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
+            });
+        }
+        const randomPointIndex = Math.floor(Math.random() * BLOB_POINTS);
+        let point = points[randomPointIndex];
+
+        while (point.y < 0) {
+            point = points[Math.floor(Math.random() * BLOB_POINTS)];
+        }
+
+        drip.style.left = `${currentX + point.x}px`;
+        drip.style.top = `${currentY + point.y}px`;
         
         heroSection.appendChild(drip);
 
         setTimeout(() => {
             drip.remove();
-        }, 3000); // Must match the animation duration in CSS (3s)
+        }, 3000);
     }
 
     // --- THE MAIN ANIMATION LOOP ---
