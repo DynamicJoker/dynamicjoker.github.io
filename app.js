@@ -12,7 +12,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTypingAnimation();
     enableLogoBarDragScroll();
     updateYearsExperience();
-    initializeMouseGradient();
+    //initializeMouseGradient();
+    initializeHeroVisuals();
 });
 
 // Loading Screen Animation
@@ -161,20 +162,89 @@ function animateServiceCards() {
     });
 }
 
-function initializeMouseGradient() {
+function initializeHeroVisuals() {
     const heroSection = document.getElementById('hero');
     if (!heroSection) return;
 
-    heroSection.addEventListener('mousemove', (e) => {
-        // Get the position of the mouse relative to the hero section
-        const rect = heroSection.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
+    // --- CONFIG ---
+    const IDLE_TIMEOUT = 30000; // 30 seconds
 
-        // Update the CSS custom properties in real-time
+    // --- STATE VARIABLES ---
+    let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    let isIdle = false;
+    let idleTimer;
+    let animationFrameId;
+
+    let rect = heroSection.getBoundingClientRect();
+    let bounceX = Math.random() * rect.width;
+    let bounceY = Math.random() * rect.height;
+    let bounceVX = (Math.random() - 0.5) * 2;
+    let bounceVY = (Math.random() - 0.5) * 2;
+
+    // --- HELPER FUNCTIONS ---
+    function updateGradientPosition(x, y) {
         heroSection.style.setProperty('--mouse-x', `${x}px`);
         heroSection.style.setProperty('--mouse-y', `${y}px`);
+    }
+
+    // --- ANIMATION LOGIC ---
+    function animate() {
+        if (isIdle || isTouchDevice) {
+            bounceX += bounceVX;
+            bounceY += bounceVY;
+            if (bounceX <= 0 || bounceX >= rect.width) bounceVX *= -1;
+            if (bounceY <= 0 || bounceY >= rect.height) bounceVY *= -1;
+            updateGradientPosition(bounceX, bounceY);
+        }
+        animationFrameId = requestAnimationFrame(animate);
+    }
+
+    // --- EVENT HANDLERS ---
+    if (isTouchDevice) {
+        isIdle = false;
+    } else {
+        isIdle = true; // Start desktop in idle mode.
+
+        const resetIdleTimer = () => {
+            clearTimeout(idleTimer);
+            idleTimer = setTimeout(() => {
+                isIdle = true;
+            }, IDLE_TIMEOUT);
+        };
+
+        // This shared function handles all mouse interaction.
+        const handleUserInteraction = (e) => {
+            if (isIdle) {
+                isIdle = false; // Wake up!
+            }
+            const currentRect = heroSection.getBoundingClientRect();
+            const x = e.clientX - currentRect.left;
+            const y = e.clientY - currentRect.top;
+            updateGradientPosition(x, y);
+            resetIdleTimer();
+        };
+
+        // --- NEW: Handle mouse leaving and entering the window ---
+        document.addEventListener('mouseleave', () => {
+            isIdle = true; // Instantly start idle animation when mouse leaves.
+        });
+
+        document.addEventListener('mouseenter', (e) => {
+            // Instantly snap to cursor and wake up when mouse re-enters.
+            handleUserInteraction(e);
+        });
+
+        // Still listen for movement within the hero section.
+        heroSection.addEventListener('mousemove', handleUserInteraction);
+
+        resetIdleTimer(); // Start the initial timer.
+    }
+
+    window.addEventListener('resize', () => {
+        rect = heroSection.getBoundingClientRect();
     });
+
+    animate(); // Start the main animation loop.
 }
 
 /* Particle animation in hero background
