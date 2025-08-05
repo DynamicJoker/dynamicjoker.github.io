@@ -863,9 +863,9 @@ html[data-color-scheme="dark"] {
 .drip {
     background-color: rgba(0, 108, 204, 0.3);
     
-    border-radius: 50% 50% 50% 20%;
+    border-radius: 50% 20% 50% 50%;
     
-    transform: rotate(45deg); 
+    transform: rotate(135deg); 
 }
 
 @keyframes fall {
