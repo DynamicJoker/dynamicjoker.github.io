@@ -205,40 +205,41 @@ function initializeHeroVisuals() {
         return d;
     }
 
-    // --- NEW: DRIP CREATION LOGIC ---
+    // --- NEW: DRIP CREATION LOGIC - Fix #3 ---
     function createDrip() {
-        const drip = document.createElement('div');
-        drip.className = 'drip';
+    const wrapper = document.createElement('div');
+    wrapper.className = 'drip-wrapper';
 
-        const size = Math.random() * 8 + 4;
-        drip.style.width = `${size}px`;
-        drip.style.height = `${size}px`;
+    const drip = document.createElement('div');
+    drip.className = 'drip';
 
-        // Get current shape of blob
-        const points = [];
-        for (let i = 0; i < BLOB_POINTS; i++) {
-            const angle = (i / BLOB_POINTS) * Math.PI * 2;
-            const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
-            points.push({
-                x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
-                y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
-            });
-        }
-        const randomPointIndex = Math.floor(Math.random() * BLOB_POINTS);
-        let point = points[randomPointIndex];
+    const size = Math.random() * 8 + 4;
+    drip.style.width = `${size}px`;
+    drip.style.height = `${size}px`;
 
-        while (point.y < 0) {
-            point = points[Math.floor(Math.random() * BLOB_POINTS)];
-        }
+    const points = [];
+    for (let i = 0; i < BLOB_POINTS; i++) {
+        const angle = (i / BLOB_POINTS) * Math.PI * 2;
+        const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
+        points.push({
+            x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
+            y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
+        });
+    }
+    let point = points[Math.floor(Math.random() * BLOB_POINTS)];
+    while (point.y < 0) {
+        point = points[Math.floor(Math.random() * BLOB_POINTS)];
+    }
+    
+    wrapper.style.left = `${currentX + point.x}px`;
+    wrapper.style.top = `${currentY + point.y}px`;
+    
+    wrapper.appendChild(drip);
+    heroSection.appendChild(wrapper);
 
-        drip.style.left = `${currentX + point.x}px`;
-        drip.style.top = `${currentY + point.y}px`;
-        
-        heroSection.appendChild(drip);
-
-        setTimeout(() => {
-            drip.remove();
-        }, 3000);
+    setTimeout(() => {
+        wrapper.remove();
+    }, 3000);
     }
 
     // --- THE MAIN ANIMATION LOOP ---

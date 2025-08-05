@@ -853,25 +853,29 @@ html[data-color-scheme="dark"] {
     fill: rgba(0, 108, 204, 0.3);
 }
 
-.drip {
+.drip-wrapper {
     position: absolute;
-    background-color: rgba(0, 108, 204, 0.3);
-    border-radius: 50% 50% 50% 20%;
-    transform: rotate(45deg);
-    
     z-index: 1;
     pointer-events: none;
     animation: fall 3s ease-in forwards;
 }
 
+.drip {
+    background-color: rgba(0, 108, 204, 0.3);
+    
+    border-radius: 50% 50% 50% 20%;
+    
+    transform: rotate(45deg); 
+}
+
 @keyframes fall {
     from {
         opacity: 1;
-        transform: rotate(-135deg) translateY(0) scale(1);
+        transform: translateY(0) scale(1);
     }
     to {
         opacity: 0;
-        transform: rotate(-135deg) translateY(200px) scale(0.5);
+        transform: translateY(200px) scale(0.5);
     }
 }
 
