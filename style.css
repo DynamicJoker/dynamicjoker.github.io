@@ -865,7 +865,7 @@ html[data-color-scheme="dark"] {
     
     border-radius: 50% 20% 50% 50%;
     
-    transform: rotate(135deg); 
+    transform: rotate(-135deg); 
 }
 
 @keyframes fall {
