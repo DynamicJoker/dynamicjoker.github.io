@@ -819,9 +819,14 @@ html[data-color-scheme="dark"] {
   align-items: center;
   justify-content: center;
   position: relative;
-  background: linear-gradient(135deg, var(--color-dark-primary) 0%, var(--color-dark-secondary) 100%);
-  overflow: hidden;
-  background: linear-gradient(135deg, var(--color-dark-primary) 0%, var(--color-dark-secondary) 35%, var(--color-electric-blue-hover) 100%);
+  background: linear-gradient(
+    217deg, /* More diagonal angle */
+    var(--color-dark-primary),
+    #282c34, /* A new cool-toned dark grey for complexity */
+    var(--color-dark-secondary),
+    var(--color-electric-blue-hover),
+    var(--color-electric-blue) /* Using the main bright blue as a highlight */
+  );
   background-size: 400% 400%; /* Gradient fills the screen */
   animation: animated-gradient 15s ease infinite; /* Apply animation */
 }
