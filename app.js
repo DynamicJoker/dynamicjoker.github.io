@@ -168,6 +168,7 @@ function initializeHeroVisuals() {
     if (!svgPath || !heroSection) return;
 
     // --- CONFIGURATION ---
+    const DRIP_INTERVAL = 200; // Create a new drip every 200ms
     const IDLE_TIMEOUT = 30000;
     const TRANSITION_SPEED = 0.07;
     const BLOB_RADIUS = 150;
@@ -175,12 +176,11 @@ function initializeHeroVisuals() {
     const BLOB_NOISE_SPEED = 0.003;
     const BLOB_NOISE_AMOUNT = 0.15;
 
-    // --- STATE MANAGEMENT ---
+    // --- STATE & CORE VARIABLES ---
     let state = 'IDLE';
     let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     let idleTimer;
     let time = 0;
-
     let rect = heroSection.getBoundingClientRect();
     let currentX = Math.random() * rect.width;
     let currentY = Math.random() * rect.height;
@@ -192,7 +192,6 @@ function initializeHeroVisuals() {
     // --- HELPER FUNCTIONS ---
     function lerp(start, end, amount) { return start * (1 - amount) + end * amount; }
     
-    // --- THIS IS THE NEW, MORE RELIABLE BLOB GENERATION FUNCTION ---
     function createBlobPath(points) {
         if (points.length < 3) return '';
         let d = `M ${points[0].x} ${points[0].y}`;
@@ -202,15 +201,36 @@ function initializeHeroVisuals() {
             const midPoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
             d += ` Q ${p1.x},${p1.y} ${midPoint.x},${midPoint.y}`;
         }
-        d += ' Z'; // Close the path
+        d += ' Z';
         return d;
+    }
+
+    // --- NEW: DRIP CREATION LOGIC ---
+    function createDrip() {
+        const drip = document.createElement('div');
+        drip.className = 'drip';
+
+        const size = Math.random() * 8 + 4;
+        drip.style.width = `${size}px`;
+        drip.style.height = `${size}px`;
+
+        const angle = Math.PI * Math.random();
+        const radius = Math.random() * BLOB_RADIUS * 0.8;
+        drip.style.left = `${currentX + Math.cos(angle) * radius}px`;
+        drip.style.top = `${currentY + Math.sin(angle) * radius}px`;
+        
+        heroSection.appendChild(drip);
+
+        setTimeout(() => {
+            drip.remove();
+        }, 3000); // Must match the animation duration in CSS (3s)
     }
 
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
         time += BLOB_NOISE_SPEED;
 
-        // 1. Animate the Blob's SHAPE
+        // Animate the Blob's SHAPE
         const points = [];
         for (let i = 0; i < BLOB_POINTS; i++) {
             const angle = (i / BLOB_POINTS) * Math.PI * 2;
@@ -222,7 +242,7 @@ function initializeHeroVisuals() {
         }
         svgPath.setAttribute('d', createBlobPath(points));
         
-        // 2. Animate the Blob's POSITION
+        // Animate the Blob's POSITION
         if (isTouchDevice) {
             currentX += velocityX;
             currentY += velocityY;
@@ -242,7 +262,7 @@ function initializeHeroVisuals() {
                     if (Math.hypot(currentX - targetX, currentY - targetY) < 0.5) { state = 'ACTIVE'; }
                     break;
                 case 'ACTIVE':
-                    currentX = lerp(currentX, targetX, TRANSITION_SPEED * 2); // Follow a bit faster
+                    currentX = lerp(currentX, targetX, TRANSITION_SPEED * 2);
                     currentY = lerp(currentY, targetY, TRANSITION_SPEED * 2);
                     break;
             }
@@ -251,7 +271,7 @@ function initializeHeroVisuals() {
         requestAnimationFrame(animate);
     }
 
-    // --- EVENT HANDLERS ---
+    // --- EVENT HANDLERS & INITIALIZATION ---
     if (!isTouchDevice) {
         const resetIdleTimer = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { state = 'IDLE'; }, IDLE_TIMEOUT); };
         const onMouseMove = (e) => {
@@ -273,7 +293,10 @@ function initializeHeroVisuals() {
         resetIdleTimer();
     }
     window.addEventListener('resize', () => { rect = heroSection.getBoundingClientRect(); });
-    animate();
+
+    // --- Drip ANIMATIONS ---
+    animate(); 
+    setInterval(createDrip, DRIP_INTERVAL);
 }
 
 /* Particle animation in hero background

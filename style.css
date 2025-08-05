@@ -853,7 +853,28 @@ html[data-color-scheme="dark"] {
     fill: rgba(0, 108, 204, 0.3);
 }
 
+.drip {
+    position: absolute;
+    background-color: rgba(0, 108, 204, 0.3);
+    border-radius: 50%;
+    animation: fall 3s ease-in forwards;
+    z-index: 1;
+    /* Critical: Drips should not be interactive */
+    pointer-events: none;
+}
 
+@keyframes fall {
+    from {
+        /* Start fully opaque */
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        /* Fall downwards, shrink, and fade out completely */
+        opacity: 0;
+        transform: translateY(200px) scale(0.5);
+    }
+}
 
 /* .particles {
   position: absolute;
