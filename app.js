@@ -166,85 +166,123 @@ function initializeHeroVisuals() {
     const heroSection = document.getElementById('hero');
     if (!heroSection) return;
 
-    // --- CONFIG ---
-    const IDLE_TIMEOUT = 30000; // 30 seconds
+    // --- CONFIGURATION ---
+    const IDLE_TIMEOUT = 30000;
+    const TRANSITION_SPEED = 0.07; // How fast it meets the cursor (0.01 = slow, 0.1 = fast)
 
-    // --- STATE VARIABLES ---
+    // --- STATE MANAGEMENT ---
+    let state = 'IDLE'; // Can be 'IDLE', 'ACTIVE', or 'TRANSITIONING'
     let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    let isIdle = false;
     let idleTimer;
     let animationFrameId;
 
     let rect = heroSection.getBoundingClientRect();
-    let bounceX = Math.random() * rect.width;
-    let bounceY = Math.random() * rect.height;
-    let bounceVX = (Math.random() - 0.5) * 2;
-    let bounceVY = (Math.random() - 0.5) * 2;
+    // These now represent the gradient's CURRENT animated position
+    let currentX = Math.random() * rect.width;
+    let currentY = Math.random() * rect.height;
+    // Velocity for the idle bounce
+    let velocityX = (Math.random() - 0.5) * 2;
+    let velocityY = (Math.random() - 0.5) * 2;
+    // Target position (the mouse)
+    let targetX = currentX;
+    let targetY = currentY;
 
-    // --- HELPER FUNCTIONS ---
-    function updateGradientPosition(x, y) {
-        heroSection.style.setProperty('--mouse-x', `${x}px`);
-        heroSection.style.setProperty('--mouse-y', `${y}px`);
+    // --- HELPER: Linear Interpolation (Lerp) for smooth transitions ---
+    function lerp(start, end, amount) {
+        return start * (1 - amount) + end * amount;
     }
 
-    // --- ANIMATION LOGIC ---
+    // --- THE MAIN ANIMATION LOOP ---
     function animate() {
-        if (isIdle || isTouchDevice) {
-            bounceX += bounceVX;
-            bounceY += bounceVY;
-            if (bounceX <= 0 || bounceX >= rect.width) bounceVX *= -1;
-            if (bounceY <= 0 || bounceY >= rect.height) bounceVY *= -1;
-            updateGradientPosition(bounceX, bounceY);
+        if (isTouchDevice) {
+            // Simple bounce for touch devices
+            currentX += velocityX;
+            currentY += velocityY;
+            if (currentX <= 0 || currentX >= rect.width) velocityX *= -1;
+            if (currentY <= 0 || currentY >= rect.height) velocityY *= -1;
+        } else {
+            // Desktop logic uses the state machine
+            switch (state) {
+                case 'IDLE':
+                    // Bounce around the screen
+                    currentX += velocityX;
+                    currentY += velocityY;
+                    if (currentX <= 0 || currentX >= rect.width) velocityX *= -1;
+                    if (currentY <= 0 || currentY >= rect.height) velocityY *= -1;
+                    break;
+
+                case 'TRANSITIONING':
+                    // Gracefully move towards the mouse cursor
+                    currentX = lerp(currentX, targetX, TRANSITION_SPEED);
+                    currentY = lerp(currentY, targetY, TRANSITION_SPEED);
+
+                    // If we're close enough, switch to active mode
+                    const distance = Math.hypot(currentX - targetX, currentY - targetY);
+                    if (distance < 0.5) {
+                        state = 'ACTIVE';
+                        currentX = targetX;
+                        currentY = targetY;
+                    }
+                    break;
+                
+                case 'ACTIVE':
+                    // Follow the cursor directly (position is set by mousemove)
+                    currentX = targetX;
+                    currentY = targetY;
+                    break;
+            }
         }
+        
+        // Update the CSS variables on every frame
+        heroSection.style.setProperty('--mouse-x', `${currentX}px`);
+        heroSection.style.setProperty('--mouse-y', `${currentY}px`);
+        
         animationFrameId = requestAnimationFrame(animate);
     }
 
     // --- EVENT HANDLERS ---
-    if (isTouchDevice) {
-        isIdle = false;
-    } else {
-        isIdle = true; // Start desktop in idle mode.
-
+    if (!isTouchDevice) {
         const resetIdleTimer = () => {
             clearTimeout(idleTimer);
             idleTimer = setTimeout(() => {
-                isIdle = true;
+                state = 'IDLE'; // Set to idle after timeout
             }, IDLE_TIMEOUT);
         };
 
-        // This shared function handles all mouse interaction.
-        const handleUserInteraction = (e) => {
-            if (isIdle) {
-                isIdle = false; // Wake up!
-            }
+        const onMouseMove = (e) => {
             const currentRect = heroSection.getBoundingClientRect();
-            const x = e.clientX - currentRect.left;
-            const y = e.clientY - currentRect.top;
-            updateGradientPosition(x, y);
+            targetX = e.clientX - currentRect.left;
+            targetY = e.clientY - currentRect.top;
+            
+            // If the user moves the mouse, become active immediately
+            state = 'ACTIVE';
             resetIdleTimer();
         };
 
-        // --- NEW: Handle mouse leaving and entering the window ---
         document.addEventListener('mouseleave', () => {
-            isIdle = true; // Instantly start idle animation when mouse leaves.
+            state = 'IDLE'; // Start bouncing when mouse leaves
         });
-
         document.addEventListener('mouseenter', (e) => {
-            // Instantly snap to cursor and wake up when mouse re-enters.
-            handleUserInteraction(e);
+            const currentRect = heroSection.getBoundingClientRect();
+            targetX = e.clientX - currentRect.left;
+            targetY = e.clientY - currentRect.top;
+            
+            // Begin graceful transition
+            state = 'TRANSITIONING';
+            resetIdleTimer();
         });
-
-        // Still listen for movement within the hero section.
-        heroSection.addEventListener('mousemove', handleUserInteraction);
-
-        resetIdleTimer(); // Start the initial timer.
+        
+        heroSection.addEventListener('mousemove', onMouseMove);
+        
+        resetIdleTimer(); // Start the initial timer
     }
 
     window.addEventListener('resize', () => {
         rect = heroSection.getBoundingClientRect();
     });
 
-    animate(); // Start the main animation loop.
+    // Start the single, unified animation loop
+    animate();
 }
 
 /* Particle animation in hero background
