@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeLoadingScreen();
     initializeNavigation();
     initializeScrollAnimations();
-    initializeParticles();
+    // initializeParticles();
     initializePortfolioFilters();
     initializeContactForm();
     initializeSmoothScrolling();
@@ -160,7 +160,7 @@ function animateServiceCards() {
     });
 }
 
-// Particle animation in hero background
+/* Particle animation in hero background
 function initializeParticles() {
     const particlesContainer = document.getElementById('particles');
     const particleCount = 50;
@@ -201,7 +201,7 @@ function initializeParticles() {
     
     // Continuously create new particles
     setInterval(createParticle, 200);
-}
+} */ 
 
 // Portfolio filtering functionality
 function initializePortfolioFilters() {
