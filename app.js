@@ -164,22 +164,24 @@ function animateServiceCards() {
 
 function initializeHeroVisuals() {
     const svgPath = document.getElementById('hero-blob-path');
-    if (!svgPath) return;
+    const heroSection = document.getElementById('hero');
+    if (!svgPath || !heroSection) return;
 
     // --- CONFIGURATION ---
     const IDLE_TIMEOUT = 30000;
     const TRANSITION_SPEED = 0.07;
-    const BLOB_RADIUS = 150; // Base size of the blob in pixels
-    const BLOB_POINTS = 8; // Number of points in the blob shape
-    const BLOB_NOISE = 0.2; // How irregular the shape is (0 = circle, 1 = very spiky)
+    const BLOB_RADIUS = 150;
+    const BLOB_POINTS = 8;
+    const BLOB_NOISE_SPEED = 0.003;
+    const BLOB_NOISE_AMOUNT = 0.15;
 
     // --- STATE MANAGEMENT ---
     let state = 'IDLE';
     let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     let idleTimer;
-    let time = 0; // Time variable for the morphing animation
+    let time = 0;
 
-    let rect = svgPath.ownerSVGElement.getBoundingClientRect();
+    let rect = heroSection.getBoundingClientRect();
     let currentX = Math.random() * rect.width;
     let currentY = Math.random() * rect.height;
     let velocityX = (Math.random() - 0.5);
@@ -189,47 +191,45 @@ function initializeHeroVisuals() {
 
     // --- HELPER FUNCTIONS ---
     function lerp(start, end, amount) { return start * (1 - amount) + end * amount; }
-
-    // This function generates the smooth, flowing SVG path string
-    function createSpline(points) {
-        let d = `M ${points[0][0]} ${points[0][1]}`;
+    
+    // --- THIS IS THE NEW, MORE RELIABLE BLOB GENERATION FUNCTION ---
+    function createBlobPath(points) {
+        if (points.length < 3) return '';
+        let d = `M ${points[0].x} ${points[0].y}`;
         for (let i = 0; i < points.length; i++) {
-            const p0 = points[(i - 1 + points.length) % points.length];
             const p1 = points[i];
             const p2 = points[(i + 1) % points.length];
-            const p3 = points[(i + 2) % points.length];
-
-            const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
-            const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
-            const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
-            const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
-            d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2[0]} ${p2[1]}`;
+            const midPoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+            d += ` Q ${p1.x},${p1.y} ${midPoint.x},${midPoint.y}`;
         }
+        d += ' Z'; // Close the path
         return d;
     }
 
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
-        time += 0.002; // Morphing speed
-        // 1. Animates blob SHAPE
+        time += BLOB_NOISE_SPEED;
+
+        // 1. Animate the Blob's SHAPE
         const points = [];
         for (let i = 0; i < BLOB_POINTS; i++) {
             const angle = (i / BLOB_POINTS) * Math.PI * 2;
-            const noiseFactor = 1 + BLOB_NOISE * Math.sin(time + i * 1.5);
-            const x = Math.cos(angle) * BLOB_RADIUS * noiseFactor;
-            const y = Math.sin(angle) * BLOB_RADIUS * noiseFactor;
-            points.push([x, y]);
+            const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
+            points.push({
+                x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
+                y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
+            });
         }
-        svgPath.setAttribute('d', createSpline(points));
+        svgPath.setAttribute('d', createBlobPath(points));
         
-        // 2. Animate blob POSITION
+        // 2. Animate the Blob's POSITION
         if (isTouchDevice) {
             currentX += velocityX;
             currentY += velocityY;
             if (currentX - BLOB_RADIUS <= 0 || currentX + BLOB_RADIUS >= rect.width) velocityX *= -1;
             if (currentY - BLOB_RADIUS <= 0 || currentY + BLOB_RADIUS >= rect.height) velocityY *= -1;
         } else {
-            switch (state) {
+             switch (state) {
                 case 'IDLE':
                     currentX += velocityX;
                     currentY += velocityY;
@@ -242,8 +242,7 @@ function initializeHeroVisuals() {
                     if (Math.hypot(currentX - targetX, currentY - targetY) < 0.5) { state = 'ACTIVE'; }
                     break;
                 case 'ACTIVE':
-                    currentX = targetX;
-                    currentY = targetY;
+                    currentX = lerp(currentX, targetX, TRANSITION_SPEED * 2); // Follow a bit faster
                     break;
             }
         }
@@ -255,7 +254,7 @@ function initializeHeroVisuals() {
     if (!isTouchDevice) {
         const resetIdleTimer = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { state = 'IDLE'; }, IDLE_TIMEOUT); };
         const onMouseMove = (e) => {
-            const currentRect = svgPath.ownerSVGElement.getBoundingClientRect();
+            const currentRect = heroSection.getBoundingClientRect();
             targetX = e.clientX - currentRect.left;
             targetY = e.clientY - currentRect.top;
             if (state !== 'ACTIVE') { state = 'ACTIVE'; }
@@ -263,7 +262,7 @@ function initializeHeroVisuals() {
         };
         document.addEventListener('mouseleave', () => { state = 'IDLE'; });
         document.addEventListener('mouseenter', (e) => {
-            const currentRect = svgPath.ownerSVGElement.getBoundingClientRect();
+            const currentRect = heroSection.getBoundingClientRect();
             targetX = e.clientX - currentRect.left;
             targetY = e.clientY - currentRect.top;
             state = 'TRANSITIONING';
@@ -272,7 +271,7 @@ function initializeHeroVisuals() {
         heroSection.addEventListener('mousemove', onMouseMove);
         resetIdleTimer();
     }
-    window.addEventListener('resize', () => { rect = svgPath.ownerSVGElement.getBoundingClientRect(); });
+    window.addEventListener('resize', () => { rect = heroSection.getBoundingClientRect(); });
     animate();
 }
 

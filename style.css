@@ -823,6 +823,11 @@ html[data-color-scheme="dark"] {
   background: var(--color-dark-primary); 
 }
 
+.hero-content {
+  position: relative;
+  z-index: 2;
+}
+
 .hero-background {
   position: absolute;
   top: 0;
@@ -847,6 +852,8 @@ html[data-color-scheme="dark"] {
     /* The color and opacity of blob */
     fill: rgba(0, 108, 204, 0.3);
 }
+
+
 
 /* .particles {
   position: absolute;
