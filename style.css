@@ -820,15 +820,7 @@ html[data-color-scheme="dark"] {
   justify-content: center;
   position: relative;
   overflow: hidden;
-
-  background: radial-gradient(
-    circle 40vmin at var(--mouse-x, 50%) var(--mouse-y, 50%),
-
-    rgba(0, 108, 204, 0.1), /* Opacity for a softer/harsher glow */
-    var(--color-dark-secondary) 25%, /* fade-out distance */
-    #282c34 50%,
-    var(--color-dark-primary) 70%
-  );
+  background: var(--color-dark-primary); 
 }
 
 .hero-background {
@@ -838,6 +830,22 @@ html[data-color-scheme="dark"] {
   width: 100%;
   height: 100%;
   z-index: 1;
+}
+
+.hero-blob-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* CRITICAL: Pass mouse events through SVG to content */
+    pointer-events: none;
+    z-index: 1; /* Place behind text content */
+}
+
+#hero-blob-path {
+    /* The color and opacity of blob */
+    fill: rgba(0, 108, 204, 0.3);
 }
 
 /* .particles {

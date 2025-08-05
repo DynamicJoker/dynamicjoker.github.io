@@ -163,125 +163,116 @@ function animateServiceCards() {
 }
 
 function initializeHeroVisuals() {
-    const heroSection = document.getElementById('hero');
-    if (!heroSection) return;
+    const svgPath = document.getElementById('hero-blob-path');
+    if (!svgPath) return;
 
     // --- CONFIGURATION ---
     const IDLE_TIMEOUT = 30000;
-    const TRANSITION_SPEED = 0.07; // How fast it meets the cursor (0.01 = slow, 0.1 = fast)
+    const TRANSITION_SPEED = 0.07;
+    const BLOB_RADIUS = 150; // Base size of the blob in pixels
+    const BLOB_POINTS = 8; // Number of points in the blob shape
+    const BLOB_NOISE = 0.2; // How irregular the shape is (0 = circle, 1 = very spiky)
 
     // --- STATE MANAGEMENT ---
-    let state = 'IDLE'; // Can be 'IDLE', 'ACTIVE', or 'TRANSITIONING'
+    let state = 'IDLE';
     let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     let idleTimer;
-    let animationFrameId;
+    let time = 0; // Time variable for the morphing animation
 
-    let rect = heroSection.getBoundingClientRect();
-    // These now represent the gradient's CURRENT animated position
+    let rect = svgPath.ownerSVGElement.getBoundingClientRect();
     let currentX = Math.random() * rect.width;
     let currentY = Math.random() * rect.height;
-    // Velocity for the idle bounce
-    let velocityX = (Math.random() - 0.5) * 2;
-    let velocityY = (Math.random() - 0.5) * 2;
-    // Target position (the mouse)
+    let velocityX = (Math.random() - 0.5);
+    let velocityY = (Math.random() - 0.5);
     let targetX = currentX;
     let targetY = currentY;
 
-    // --- HELPER: Linear Interpolation (Lerp) for smooth transitions ---
-    function lerp(start, end, amount) {
-        return start * (1 - amount) + end * amount;
+    // --- HELPER FUNCTIONS ---
+    function lerp(start, end, amount) { return start * (1 - amount) + end * amount; }
+
+    // This function generates the smooth, flowing SVG path string
+    function createSpline(points) {
+        let d = `M ${points[0][0]} ${points[0][1]}`;
+        for (let i = 0; i < points.length; i++) {
+            const p0 = points[(i - 1 + points.length) % points.length];
+            const p1 = points[i];
+            const p2 = points[(i + 1) % points.length];
+            const p3 = points[(i + 2) % points.length];
+
+            const cp1x = p1[0] + (p2[0] - p0[0]) / 6;
+            const cp1y = p1[1] + (p2[1] - p0[1]) / 6;
+            const cp2x = p2[0] - (p3[0] - p1[0]) / 6;
+            const cp2y = p2[1] - (p3[1] - p1[1]) / 6;
+            d += ` C ${cp1x} ${cp1y} ${cp2x} ${cp2y} ${p2[0]} ${p2[1]}`;
+        }
+        return d;
     }
 
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
+        time += 0.002; // Morphing speed
+        // 1. Animates blob SHAPE
+        const points = [];
+        for (let i = 0; i < BLOB_POINTS; i++) {
+            const angle = (i / BLOB_POINTS) * Math.PI * 2;
+            const noiseFactor = 1 + BLOB_NOISE * Math.sin(time + i * 1.5);
+            const x = Math.cos(angle) * BLOB_RADIUS * noiseFactor;
+            const y = Math.sin(angle) * BLOB_RADIUS * noiseFactor;
+            points.push([x, y]);
+        }
+        svgPath.setAttribute('d', createSpline(points));
+        
+        // 2. Animate blob POSITION
         if (isTouchDevice) {
-            // Simple bounce for touch devices
             currentX += velocityX;
             currentY += velocityY;
-            if (currentX <= 0 || currentX >= rect.width) velocityX *= -1;
-            if (currentY <= 0 || currentY >= rect.height) velocityY *= -1;
+            if (currentX - BLOB_RADIUS <= 0 || currentX + BLOB_RADIUS >= rect.width) velocityX *= -1;
+            if (currentY - BLOB_RADIUS <= 0 || currentY + BLOB_RADIUS >= rect.height) velocityY *= -1;
         } else {
-            // Desktop logic uses the state machine
             switch (state) {
                 case 'IDLE':
-                    // Bounce around the screen
                     currentX += velocityX;
                     currentY += velocityY;
-                    if (currentX <= 0 || currentX >= rect.width) velocityX *= -1;
-                    if (currentY <= 0 || currentY >= rect.height) velocityY *= -1;
+                    if (currentX - BLOB_RADIUS <= 0 || currentX + BLOB_RADIUS >= rect.width) velocityX *= -1;
+                    if (currentY - BLOB_RADIUS <= 0 || currentY + BLOB_RADIUS >= rect.height) velocityY *= -1;
                     break;
-
                 case 'TRANSITIONING':
-                    // Gracefully move towards the mouse cursor
                     currentX = lerp(currentX, targetX, TRANSITION_SPEED);
                     currentY = lerp(currentY, targetY, TRANSITION_SPEED);
-
-                    // If we're close enough, switch to active mode
-                    const distance = Math.hypot(currentX - targetX, currentY - targetY);
-                    if (distance < 0.5) {
-                        state = 'ACTIVE';
-                        currentX = targetX;
-                        currentY = targetY;
-                    }
+                    if (Math.hypot(currentX - targetX, currentY - targetY) < 0.5) { state = 'ACTIVE'; }
                     break;
-                
                 case 'ACTIVE':
-                    // Follow the cursor directly (position is set by mousemove)
                     currentX = targetX;
                     currentY = targetY;
                     break;
             }
         }
-        
-        // Update the CSS variables on every frame
-        heroSection.style.setProperty('--mouse-x', `${currentX}px`);
-        heroSection.style.setProperty('--mouse-y', `${currentY}px`);
-        
-        animationFrameId = requestAnimationFrame(animate);
+        svgPath.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        requestAnimationFrame(animate);
     }
 
     // --- EVENT HANDLERS ---
     if (!isTouchDevice) {
-        const resetIdleTimer = () => {
-            clearTimeout(idleTimer);
-            idleTimer = setTimeout(() => {
-                state = 'IDLE'; // Set to idle after timeout
-            }, IDLE_TIMEOUT);
-        };
-
+        const resetIdleTimer = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { state = 'IDLE'; }, IDLE_TIMEOUT); };
         const onMouseMove = (e) => {
-            const currentRect = heroSection.getBoundingClientRect();
+            const currentRect = svgPath.ownerSVGElement.getBoundingClientRect();
             targetX = e.clientX - currentRect.left;
             targetY = e.clientY - currentRect.top;
-            
-            // If the user moves the mouse, become active immediately
-            state = 'ACTIVE';
+            if (state !== 'ACTIVE') { state = 'ACTIVE'; }
             resetIdleTimer();
         };
-
-        document.addEventListener('mouseleave', () => {
-            state = 'IDLE'; // Start bouncing when mouse leaves
-        });
+        document.addEventListener('mouseleave', () => { state = 'IDLE'; });
         document.addEventListener('mouseenter', (e) => {
-            const currentRect = heroSection.getBoundingClientRect();
+            const currentRect = svgPath.ownerSVGElement.getBoundingClientRect();
             targetX = e.clientX - currentRect.left;
             targetY = e.clientY - currentRect.top;
-            
-            // Begin graceful transition
             state = 'TRANSITIONING';
             resetIdleTimer();
         });
-        
         heroSection.addEventListener('mousemove', onMouseMove);
-        
-        resetIdleTimer(); // Start the initial timer
+        resetIdleTimer();
     }
-
-    window.addEventListener('resize', () => {
-        rect = heroSection.getBoundingClientRect();
-    });
-
-    // Start the single, unified animation loop
+    window.addEventListener('resize', () => { rect = svgPath.ownerSVGElement.getBoundingClientRect(); });
     animate();
 }
 
