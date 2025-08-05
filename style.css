@@ -867,11 +867,11 @@ html[data-color-scheme="dark"] {
 @keyframes fall {
     from {
         opacity: 1;
-        transform: rotate(45deg) translateY(0) scale(1);
+        transform: rotate(-135deg) translateY(0) scale(1);
     }
     to {
         opacity: 0;
-        transform: rotate(45deg) translateY(200px) scale(0.5);
+        transform: rotate(-135deg) translateY(200px) scale(0.5);
     }
 }
 
