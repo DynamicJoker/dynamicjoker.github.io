@@ -820,12 +820,14 @@ html[data-color-scheme="dark"] {
   justify-content: center;
   position: relative;
   overflow: hidden;
+
   background: radial-gradient(
-    circle 800px at var(--mouse-x, 50%) var(--mouse-y, 50%),
-    rgba(0, 108, 204, 0.15), /* Electric blue glow */
-    var(--color-dark-secondary) 40%,
-    #282c34 60%,
-    var(--color-dark-primary) 80%
+    circle 40vmin at var(--mouse-x, 50%) var(--mouse-y, 50%),
+
+    rgba(0, 108, 204, 0.1), /* Opacity for a softer/harsher glow */
+    var(--color-dark-secondary) 25%, /* fade-out distance */
+    #282c34 50%,
+    var(--color-dark-primary) 70%
   );
 }
 
