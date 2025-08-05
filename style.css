@@ -819,16 +819,14 @@ html[data-color-scheme="dark"] {
   align-items: center;
   justify-content: center;
   position: relative;
-  background: linear-gradient(
-    217deg, /* More diagonal angle */
-    var(--color-dark-primary),
-    #282c34, /* A new cool-toned dark grey for complexity */
-    var(--color-dark-secondary),
-    var(--color-electric-blue-hover),
-    var(--color-electric-blue) /* Using the main bright blue as a highlight */
+  overflow: hidden;
+  background: radial-gradient(
+    circle 800px at var(--mouse-x, 50%) var(--mouse-y, 50%),
+    rgba(0, 108, 204, 0.15), /* Electric blue glow */
+    var(--color-dark-secondary) 40%,
+    #282c34 60%,
+    var(--color-dark-primary) 80%
   );
-  background-size: 400% 400%; /* Gradient fills the screen */
-  animation: animated-gradient 15s ease infinite; /* Apply animation */
 }
 
 .hero-background {
@@ -1740,10 +1738,3 @@ html[data-color-scheme="dark"] {
       max-width: 120px;
   }
 }
-
-/* Animated gradient background */
-@keyframes animated-gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-} 

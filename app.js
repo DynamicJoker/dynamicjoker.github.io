@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeTypingAnimation();
     enableLogoBarDragScroll();
     updateYearsExperience();
+    initializeMouseGradient();
 });
 
 // Loading Screen Animation
@@ -157,6 +158,22 @@ function animateServiceCards() {
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         }, index * 150);
+    });
+}
+
+function initializeMouseGradient() {
+    const heroSection = document.getElementById('hero');
+    if (!heroSection) return;
+
+    heroSection.addEventListener('mousemove', (e) => {
+        // Get the position of the mouse relative to the hero section
+        const rect = heroSection.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Update the CSS custom properties in real-time
+        heroSection.style.setProperty('--mouse-x', `${x}px`);
+        heroSection.style.setProperty('--mouse-y', `${y}px`);
     });
 }
 
