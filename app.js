@@ -137,7 +137,9 @@ function initializeSmartGlow() {
             intensity = 1 - (closestDist / activationRange);
         }
         intensity = Math.max(0, intensity);
-
+        if (scrollY < 10) {
+            intensity = 0;
+        }
         const sizeX = baseGlow.size + (peakGlow.size - baseGlow.size) * intensity;
         const opacity = baseGlow.opacity + (peakGlow.opacity - baseGlow.opacity) * intensity;
         
@@ -146,8 +148,7 @@ function initializeSmartGlow() {
         }
         navbar.style.setProperty('--glow-size', `${sizeX}px 5px`);
         navbar.style.setProperty('--glow-color', `rgba(${glowColorRgb}, ${opacity})`);
-        navbar.style.setProperty('--glow-opacity', '1');
-
+        navbar.style.setProperty('--glow-opacity', intensity);
         requestAnimationFrame(updateGlow);
     }
 

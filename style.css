@@ -764,11 +764,6 @@ html[data-color-scheme="dark"] {
   animation: none; /* Remove all looping animations */
 }
 
-/* 4. Make the effect visible when scrolled (Unchanged) */
-.navbar.scrolled::after {
-  opacity: 1;
-}
-
 .nav-container {
   max-width: 1200px;
   margin: 0 auto;
@@ -1160,27 +1155,101 @@ html[data-color-scheme="dark"] {
   color: var(--color-electric-blue);
 }
 
-.skill-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-8);
-}
-
-.skill-tag {
-  padding: var(--space-6) var(--space-12);
-  background: rgba(0, 212, 255, 0.1);
-  color: var(--color-electric-blue);
-  border-radius: var(--radius-full);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  border: 1px solid rgba(0, 212, 255, 0.2);
+.skill-tags .skill-tag {
+  display: block;
+  padding: var(--space-8) 0;
+  padding-left: 20px; /* Space for the vertical bar */
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  position: relative;
+  background: transparent;
+  border: none;
   transition: all var(--animation-speed) var(--animation-curve);
 }
 
-.skill-tag:hover {
-  background: rgba(0, 212, 255, 0.2);
-  transform: scale(1.05);
+/* This creates the vertical "HUD" bar for single-column lists */
+.skill-tags .skill-tag::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 4px;
+  height: 60%;
+  background: var(--color-electric-blue);
+  opacity: 0.4;
+  border-radius: 2px;
+  transition: all var(--animation-speed) var(--animation-curve);
 }
+
+/* Hover effect for single-column lists */
+.skill-tags .skill-tag:hover {
+  color: var(--color-electric-blue);
+}
+
+.skill-tags .skill-tag:hover::before {
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+  height: 80%;
+}
+
+
+/* --- Styles for the new two-column "Tools & Platforms" grid --- */
+
+/* This container holds the rows */
+.skill-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Vertical space between rows */
+}
+
+/* This container holds a pair of skills */
+.skill-row {
+  display: flex;
+  align-items: center;
+}
+
+/* This is the individual skill text */
+.skill-row .skill-item {
+  flex: 1; /* Each item takes up half the space in a row */
+  padding: var(--space-8) 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  transition: color var(--animation-speed) var(--animation-curve);
+  position: relative; /* Needed for the divider */
+}
+
+.skill-row .skill-item:hover {
+  color: var(--color-electric-blue);
+}
+
+/* This adds padding to the second item to make space for the divider */
+.skill-row .skill-item:not(:first-child) {
+  padding-left: 20px;
+}
+
+/* This creates the FADING GRADIENT DIVIDER on the second item */
+.skill-row .skill-item:not(:first-child)::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2px;
+  height: 80%;
+  
+  /* The vertical gradient that fades at top and bottom */
+  background: linear-gradient(
+    to bottom, 
+    transparent 0%, 
+    var(--color-electric-blue) 50%, 
+    transparent 100%
+  );
+  
+  opacity: 0.5; /* Makes the line subtle */
+}
+
+
 
 /* Services Section */
 .services-grid {
