@@ -30,18 +30,19 @@ function initializeLoadingScreen() {
 }
 
 // Navigation functionality
-function initializeNavigation() {
-    const navbar = document.getElementById('navbar');
+function initializeMobileMenu() {
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
     const navLinks = document.querySelectorAll('.nav-link');
-    
+
+    if (!hamburger || !navMenu) return;
+
     // Mobile menu toggle
     hamburger.addEventListener('click', () => {
         hamburger.classList.toggle('active');
         navMenu.classList.toggle('active');
     });
-    
+
     // Close mobile menu when clicking on a link
     navLinks.forEach(link => {
         link.addEventListener('click', () => {
@@ -49,6 +50,12 @@ function initializeNavigation() {
             navMenu.classList.remove('active');
         });
     });
+}
+
+// Handles the navbar's background style change on scroll
+function initializeNavbarScroll() {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
 
     // This new function just adds or removes the '.scrolled' class
     function updateNavbarOnScroll() {
@@ -59,10 +66,16 @@ function initializeNavigation() {
         } else {
             navbar.classList.remove('scrolled');
         }
-        updateActiveNavLink();
+        updateActiveNavLink(); // This function is still needed here
     }
     window.addEventListener('scroll', updateNavbarOnScroll);
     updateNavbarOnScroll();
+}
+
+// Navigation functionality
+function initializeNavigation() {
+    initializeMobileMenu();
+    initializeNavbarScroll();
 }
 
 function initializeSmartGlow() {
@@ -244,9 +257,9 @@ function initializeHeroVisuals() {
     if (!svgPath || !heroSection) return;
 
     // --- CONFIGURATION ---
-    const BLOB_RADIUS = 200;
-    const MAX_STRETCH = 75;
-    const BLOB_POINTS = 8;
+    const BLOB_RADIUS = 300;
+    const MAX_STRETCH = 120;
+    const BLOB_POINTS = 100;
     const BLOB_NOISE_SPEED = 0.003;
     const BLOB_NOISE_AMOUNT = 0.15;
     const MOUSE_FOLLOW_SPEED = 0.08; 
@@ -283,16 +296,11 @@ function initializeHeroVisuals() {
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
         time += BLOB_NOISE_SPEED;
-
-        // --- THE FIX: Smoothly move the virtual mouse towards the real mouse ---
         virtualMouseX = lerp(virtualMouseX, mouseX, MOUSE_FOLLOW_SPEED);
         virtualMouseY = lerp(virtualMouseY, mouseY, MOUSE_FOLLOW_SPEED);
-
-        // All calculations now use the SMOOTHED virtual mouse position
         const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
         const mouseDistance = Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY);
         const pullIntensity = Math.min(mouseDistance / (rect.width / 3), 1);
-
         const points = [];
         for (let i = 0; i < BLOB_POINTS; i++) {
             const angle = (i / BLOB_POINTS) * Math.PI * 2;
@@ -300,49 +308,47 @@ function initializeHeroVisuals() {
             const alignment = (Math.cos(angle - mouseAngle) + 1) / 2;
             const stretch = pullIntensity * MAX_STRETCH * alignment;
             const finalRadius = (BLOB_RADIUS + stretch) * noiseFactor;
-
             points.push({
                 x: Math.cos(angle) * finalRadius,
                 y: Math.sin(angle) * finalRadius
             });
         }
-        
         svgPath.setAttribute('d', createBlobPath(points));
         requestAnimationFrame(animate);
     }
 
-    // --- EVENT HANDLERS & INITIALIZATION (Unchanged logic) ---
-    
+    // --- Dedicated function to bind all events ---
+    function bindHeroEvents() {
+        const onMouseMove = (e) => {
+            const currentRect = heroSection.getBoundingClientRect();
+            mouseX = e.clientX - currentRect.left;
+            mouseY = e.clientY - currentRect.top;
+        };
+        
+        const onMouseLeave = () => {
+            mouseX = centerX;
+            mouseY = centerY;
+        };
+
+        heroSection.addEventListener('mousemove', onMouseMove);
+        heroSection.addEventListener('mouseleave', onMouseLeave);
+
+        window.addEventListener('resize', () => { 
+            rect = heroSection.getBoundingClientRect(); 
+            centerX = rect.width / 2;
+            centerY = rect.height / 2;
+            mouseX = centerX;
+            mouseY = centerY;
+            virtualMouseX = centerX;
+            virtualMouseY = centerY;
+            svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
+        });
+    }
+
+    // --- Final Initialization Steps ---
     svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
-
-    const onMouseMove = (e) => {
-        const currentRect = heroSection.getBoundingClientRect();
-        mouseX = e.clientX - currentRect.left;
-        mouseY = e.clientY - currentRect.top;
-    };
-    
-    const onMouseLeave = () => {
-        // Set the TARGET for the virtual mouse back to the center
-        mouseX = centerX;
-        mouseY = centerY;
-    };
-
-    heroSection.addEventListener('mousemove', onMouseMove);
-    heroSection.addEventListener('mouseleave', onMouseLeave);
-
-    window.addEventListener('resize', () => { 
-        rect = heroSection.getBoundingClientRect(); 
-        centerX = rect.width / 2;
-        centerY = rect.height / 2;
-        // On resize, snap everything back to the new center to avoid weirdness
-        mouseX = centerX;
-        mouseY = centerY;
-        virtualMouseX = centerX;
-        virtualMouseY = centerY;
-        svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
-    });
-
-    animate(); 
+    bindHeroEvents(); // Call the new function to attach events
+    animate();      // Start the animation
 }
 
 // Portfolio filtering functionality
@@ -760,26 +766,29 @@ function enableLogoBarDragScroll() {
             document.body.style.userSelect = '';
         };
 
-        wrapper.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            onDragStart(e.pageX);
-        });
-        window.addEventListener('mousemove', (e) => {
-            onDragMove(e.pageX);
-        });
-        window.addEventListener('mouseup', onDragEnd);
-        window.addEventListener('mouseleave', onDragEnd);
+        function bindDragEvents() {
+            wrapper.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                onDragStart(e.pageX);
+            });
+            window.addEventListener('mousemove', (e) => {
+                onDragMove(e.pageX);
+            });
+            window.addEventListener('mouseup', onDragEnd);
+            window.addEventListener('mouseleave', onDragEnd);
 
-        wrapper.addEventListener('touchstart', (e) => {
-            onDragStart(e.touches[0].pageX);
-        }, { passive: true });
-        window.addEventListener('touchmove', (e) => {
-             if (isDragging) {
-                onDragMove(e.touches[0].pageX)
-             }
-        });
-        window.addEventListener('touchend', onDragEnd);
+            wrapper.addEventListener('touchstart', (e) => {
+                onDragStart(e.touches[0].pageX);
+            }, { passive: true });
+            window.addEventListener('touchmove', (e) => {
+                 if (isDragging) {
+                    onDragMove(e.touches[0].pageX);
+                 }
+            });
+            window.addEventListener('touchend', onDragEnd);
+        }
         
+        bindDragEvents();
         animate();
 
     } catch (error) {
