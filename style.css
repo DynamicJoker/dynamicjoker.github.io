@@ -725,25 +725,23 @@ html[data-color-scheme="dark"] {
 
 /* Navigation */
 .navbar {
-  top: 0;
-  left: 0;
-  width: 100%;
-  
+  top: 0; left: 0; width: 100%;
   position: fixed;
   backdrop-filter: blur(10px);
   z-index: 1000;
-  
-  background-color: rgba(10, 10, 10, 0); /* Default state is transparent */
+  background-color: rgba(10, 10, 10, 0);
   border-bottom: none;
   box-shadow: none;
-  transition: background-color 0.4s ease;
+  transition: background-color 0.4s ease, box-shadow 0.4s ease;
 }
 
+/* 2. Base glow when scrolled (Unchanged) */
 .navbar.scrolled {
-  background-color: rgba(10, 10, 10, 0.85); /* Fades in the dark background */
-  box-shadow: 0 6px 50px rgba(245, 245, 245, 0.15);
+  background-color: rgba(10, 10, 10, 0.85);
+  box-shadow: 0 6px 50px rgba(245, 245, 245, 0.1);
 }
 
+/* 3. The new FOCUSED gradient glow */
 .navbar::after {
   content: '';
   position: absolute;
@@ -751,26 +749,24 @@ html[data-color-scheme="dark"] {
   bottom: -2px;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-electric-blue), var(--color-accent-teal));
-  opacity: 0; /* The border is invisible by default */
-  animation: pulseGlow 3s ease-in-out infinite;
+  
+  /* --- THE KEY CHANGE --- */
+  /* We now use a radial gradient for the background. JS will control its variables. */
+  /* It's an ellipse, with a variable size, positioned at a variable X-coordinate. */
+  background: radial-gradient(
+    ellipse var(--glow-size, 50px 5px) at var(--glow-position-x, 50%) 50%,
+    var(--glow-color, rgba(20, 184, 166, 0.5)) 0%,
+    transparent 80%
+  );
+  
+  opacity: var(--glow-opacity, 0);
   transition: opacity 0.5s ease-in-out;
+  animation: none; /* Remove all looping animations */
 }
 
+/* 4. Make the effect visible when scrolled (Unchanged) */
 .navbar.scrolled::after {
   opacity: 1;
-}
-
-@keyframes pulseGlow {
-  0% {
-    box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
-  }
-  50% {
-    box-shadow: 0 3px 35px rgba(20, 184, 166, 0.9);
-  }
-  100% {
-    box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
-  }
 }
 
 .nav-container {

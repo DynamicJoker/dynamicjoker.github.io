@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     updateYearsExperience();
     initializeHeroVisuals();
     initializeScrambleAnimation()
+    initializeSmartGlow()
 });
 
 // Loading Screen Animation
@@ -62,6 +63,84 @@ function initializeNavigation() {
     }
     window.addEventListener('scroll', updateNavbarOnScroll);
     updateNavbarOnScroll();
+}
+
+function initializeSmartGlow() {
+    const navbar = document.getElementById('navbar');
+    if (!navbar) return;
+
+    let titleData = [];
+    
+    // --- THE FIX: This function now finds ALL titles ---
+    function cacheTitlePositions() {
+        // 1. Select both the hero title and the section titles
+        const heroTitle = document.querySelector('.hero-name');
+        const sectionTitles = document.querySelectorAll('.section-title');
+
+        // 2. Create a combined list of all title elements
+        const allTitles = [];
+        if (heroTitle) {
+            allTitles.push(heroTitle); // Add the hero title first
+        }
+        allTitles.push(...sectionTitles); // Add the rest of the titles
+
+        // 3. Map over the combined list to get their positions
+        titleData = allTitles.map(title => {
+            const rect = title.getBoundingClientRect();
+            return {
+                top: rect.top + window.scrollY,
+                centerX: rect.left + window.scrollY + rect.width / 2
+            };
+        });
+    }
+
+    const activationRange = 500;
+    const baseGlow = { size: 50, opacity: 0.4 };
+    const peakGlow = { size: 300, opacity: 0.8 };
+    const glowColorRgb = '0, 212, 255'; // Electric Blue
+
+    function updateGlow() {
+        const scrollY = window.scrollY;
+        const navBottom = scrollY + navbar.offsetHeight;
+
+        let prevTitle = null;
+        let nextTitle = null;
+        for (const title of titleData) {
+            if (title.top < navBottom) {
+                prevTitle = title;
+            } else {
+                nextTitle = title;
+                break;
+            }
+        }
+        
+        const distToPrev = prevTitle ? navBottom - prevTitle.top : Infinity;
+        const distToNext = nextTitle ? nextTitle.top - navBottom : Infinity;
+        const activeTitle = distToNext < distToPrev ? nextTitle : prevTitle;
+        const closestDist = Math.min(distToPrev, distToNext);
+
+        let intensity = 0;
+        if (activeTitle && closestDist < activationRange) {
+            intensity = 1 - (closestDist / activationRange);
+        }
+        intensity = Math.max(0, intensity);
+
+        const sizeX = baseGlow.size + (peakGlow.size - baseGlow.size) * intensity;
+        const opacity = baseGlow.opacity + (peakGlow.opacity - baseGlow.opacity) * intensity;
+        
+        if (activeTitle) {
+            navbar.style.setProperty('--glow-position-x', `${activeTitle.centerX}px`);
+        }
+        navbar.style.setProperty('--glow-size', `${sizeX}px 5px`);
+        navbar.style.setProperty('--glow-color', `rgba(${glowColorRgb}, ${opacity})`);
+        navbar.style.setProperty('--glow-opacity', '1');
+
+        requestAnimationFrame(updateGlow);
+    }
+
+    cacheTitlePositions();
+    requestAnimationFrame(updateGlow);
+    window.addEventListener('resize', cacheTitlePositions);
 }
 
 // Update active navigation link based on scroll position
@@ -165,30 +244,29 @@ function initializeHeroVisuals() {
     if (!svgPath || !heroSection) return;
 
     // --- CONFIGURATION ---
-    const DRIP_INTERVAL = 200; // Create a new drip every 200ms
-    const IDLE_TIMEOUT = 30000;
-    const TRANSITION_SPEED = 0.07;
-    const BLOB_RADIUS = 150;
+    const BLOB_RADIUS = 200;
+    const MAX_STRETCH = 75;
     const BLOB_POINTS = 8;
     const BLOB_NOISE_SPEED = 0.003;
     const BLOB_NOISE_AMOUNT = 0.15;
+    const MOUSE_FOLLOW_SPEED = 0.08; 
 
     // --- STATE & CORE VARIABLES ---
-    let state = 'IDLE';
-    let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    let idleTimer;
     let time = 0;
     let rect = heroSection.getBoundingClientRect();
-    let currentX = Math.random() * rect.width;
-    let currentY = Math.random() * rect.height;
-    let velocityX = (Math.random() - 0.5);
-    let velocityY = (Math.random() - 0.5);
-    let targetX = currentX;
-    let targetY = currentY;
+    let centerX = rect.width / 2;
+    let centerY = rect.height / 2;
+
+    // Real mouse position
+    let mouseX = centerX;
+    let mouseY = centerY;
+
+    let virtualMouseX = centerX;
+    let virtualMouseY = centerY;
 
     // --- HELPER FUNCTIONS ---
     function lerp(start, end, amount) { return start * (1 - amount) + end * amount; }
-    
+
     function createBlobPath(points) {
         if (points.length < 3) return '';
         let d = `M ${points[0].x} ${points[0].y}`;
@@ -202,114 +280,69 @@ function initializeHeroVisuals() {
         return d;
     }
 
-    // --- NEW: DRIP CREATION LOGIC - Fix #3 ---
-    function createDrip() {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'drip-wrapper';
-
-    const drip = document.createElement('div');
-    drip.className = 'drip';
-
-    const size = Math.random() * 8 + 4;
-    drip.style.width = `${size}px`;
-    drip.style.height = `${size}px`;
-
-    const points = [];
-    for (let i = 0; i < BLOB_POINTS; i++) {
-        const angle = (i / BLOB_POINTS) * Math.PI * 2;
-        const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
-        points.push({
-            x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
-            y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
-        });
-    }
-    let point = points[Math.floor(Math.random() * BLOB_POINTS)];
-    while (point.y < 0) {
-        point = points[Math.floor(Math.random() * BLOB_POINTS)];
-    }
-    
-    wrapper.style.left = `${currentX + point.x}px`;
-    wrapper.style.top = `${currentY + point.y}px`;
-    
-    wrapper.appendChild(drip);
-    heroSection.appendChild(wrapper);
-
-    setTimeout(() => {
-        wrapper.remove();
-    }, 3000);
-    }
-
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
         time += BLOB_NOISE_SPEED;
 
-        // Animate the Blob's SHAPE
+        // --- THE FIX: Smoothly move the virtual mouse towards the real mouse ---
+        virtualMouseX = lerp(virtualMouseX, mouseX, MOUSE_FOLLOW_SPEED);
+        virtualMouseY = lerp(virtualMouseY, mouseY, MOUSE_FOLLOW_SPEED);
+
+        // All calculations now use the SMOOTHED virtual mouse position
+        const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
+        const mouseDistance = Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY);
+        const pullIntensity = Math.min(mouseDistance / (rect.width / 3), 1);
+
         const points = [];
         for (let i = 0; i < BLOB_POINTS; i++) {
             const angle = (i / BLOB_POINTS) * Math.PI * 2;
             const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
+            const alignment = (Math.cos(angle - mouseAngle) + 1) / 2;
+            const stretch = pullIntensity * MAX_STRETCH * alignment;
+            const finalRadius = (BLOB_RADIUS + stretch) * noiseFactor;
+
             points.push({
-                x: Math.cos(angle) * BLOB_RADIUS * noiseFactor,
-                y: Math.sin(angle) * BLOB_RADIUS * noiseFactor
+                x: Math.cos(angle) * finalRadius,
+                y: Math.sin(angle) * finalRadius
             });
         }
-        svgPath.setAttribute('d', createBlobPath(points));
         
-        // Animate the Blob's POSITION
-        if (isTouchDevice) {
-            currentX += velocityX;
-            currentY += velocityY;
-            if (currentX - BLOB_RADIUS <= 0 || currentX + BLOB_RADIUS >= rect.width) velocityX *= -1;
-            if (currentY - BLOB_RADIUS <= 0 || currentY + BLOB_RADIUS >= rect.height) velocityY *= -1;
-        } else {
-             switch (state) {
-                case 'IDLE':
-                    currentX += velocityX;
-                    currentY += velocityY;
-                    if (currentX - BLOB_RADIUS <= 0 || currentX + BLOB_RADIUS >= rect.width) velocityX *= -1;
-                    if (currentY - BLOB_RADIUS <= 0 || currentY + BLOB_RADIUS >= rect.height) velocityY *= -1;
-                    break;
-                case 'TRANSITIONING':
-                    currentX = lerp(currentX, targetX, TRANSITION_SPEED);
-                    currentY = lerp(currentY, targetY, TRANSITION_SPEED);
-                    if (Math.hypot(currentX - targetX, currentY - targetY) < 0.5) { state = 'ACTIVE'; }
-                    break;
-                case 'ACTIVE':
-                    currentX = lerp(currentX, targetX, TRANSITION_SPEED * 2);
-                    currentY = lerp(currentY, targetY, TRANSITION_SPEED * 2);
-                    break;
-            }
-        }
-        svgPath.style.transform = `translate(${currentX}px, ${currentY}px)`;
+        svgPath.setAttribute('d', createBlobPath(points));
         requestAnimationFrame(animate);
     }
 
-    // --- EVENT HANDLERS & INITIALIZATION ---
-    if (!isTouchDevice) {
-        const resetIdleTimer = () => { clearTimeout(idleTimer); idleTimer = setTimeout(() => { state = 'IDLE'; }, IDLE_TIMEOUT); };
-        const onMouseMove = (e) => {
-            const currentRect = heroSection.getBoundingClientRect();
-            targetX = e.clientX - currentRect.left;
-            targetY = e.clientY - currentRect.top;
-            if (state !== 'ACTIVE') { state = 'ACTIVE'; }
-            resetIdleTimer();
-        };
-        document.addEventListener('mouseleave', () => { state = 'IDLE'; });
-        document.addEventListener('mouseenter', (e) => {
-            const currentRect = heroSection.getBoundingClientRect();
-            targetX = e.clientX - currentRect.left;
-            targetY = e.clientY - currentRect.top;
-            state = 'TRANSITIONING';
-            resetIdleTimer();
-        });
-        heroSection.addEventListener('mousemove', onMouseMove);
-        resetIdleTimer();
-    }
-    window.addEventListener('resize', () => { rect = heroSection.getBoundingClientRect(); });
+    // --- EVENT HANDLERS & INITIALIZATION (Unchanged logic) ---
+    
+    svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
 
-    // --- Drip ANIMATIONS ---
+    const onMouseMove = (e) => {
+        const currentRect = heroSection.getBoundingClientRect();
+        mouseX = e.clientX - currentRect.left;
+        mouseY = e.clientY - currentRect.top;
+    };
+    
+    const onMouseLeave = () => {
+        // Set the TARGET for the virtual mouse back to the center
+        mouseX = centerX;
+        mouseY = centerY;
+    };
+
+    heroSection.addEventListener('mousemove', onMouseMove);
+    heroSection.addEventListener('mouseleave', onMouseLeave);
+
+    window.addEventListener('resize', () => { 
+        rect = heroSection.getBoundingClientRect(); 
+        centerX = rect.width / 2;
+        centerY = rect.height / 2;
+        // On resize, snap everything back to the new center to avoid weirdness
+        mouseX = centerX;
+        mouseY = centerY;
+        virtualMouseX = centerX;
+        virtualMouseY = centerY;
+        svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
+    });
+
     animate(); 
-    setInterval(createDrip, DRIP_INTERVAL);
 }
 
 // Portfolio filtering functionality
