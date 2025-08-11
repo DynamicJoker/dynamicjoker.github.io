@@ -763,15 +763,12 @@ html[data-color-scheme="dark"] {
 
 @keyframes pulseGlow {
   0% {
-    /* The "low" state for the teal pulse */
     box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
   }
   50% {
-    /* The "peak" state: a focused, vibrant teal glow that punches through */
     box-shadow: 0 3px 35px rgba(20, 184, 166, 0.9);
   }
   100% {
-    /* Returns to the low state */
     box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
   }
 }

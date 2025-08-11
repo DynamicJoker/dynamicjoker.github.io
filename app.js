@@ -8,7 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePortfolioFilters();
     initializeContactForm();
     initializeSmoothScrolling();
-    //initializeTypingAnimation();
     enableLogoBarDragScroll();
     updateYearsExperience();
     initializeHeroVisuals();
@@ -313,49 +312,6 @@ function initializeHeroVisuals() {
     setInterval(createDrip, DRIP_INTERVAL);
 }
 
-/* Particle animation in hero background
-function initializeParticles() {
-    const particlesContainer = document.getElementById('particles');
-    const particleCount = 50;
-    
-    function createParticle() {
-        const particle = document.createElement('div');
-        particle.className = 'particle';
-        
-        // Random horizontal position
-        particle.style.left = Math.random() * 100 + '%';
-        
-        // Random animation duration
-        const duration = Math.random() * 3 + 3; // 3-6 seconds
-        particle.style.animationDuration = duration + 's';
-        
-        // Random delay
-        particle.style.animationDelay = Math.random() * 2 + 's';
-        
-        // Random size
-        const size = Math.random() * 3 + 1;
-        particle.style.width = size + 'px';
-        particle.style.height = size + 'px';
-        
-        particlesContainer.appendChild(particle);
-        
-        // Remove particle after animation
-        setTimeout(() => {
-            if (particle.parentNode) {
-                particle.parentNode.removeChild(particle);
-            }
-        }, (duration + 2) * 1000);
-    }
-    
-    // Create initial particles
-    for (let i = 0; i < particleCount; i++) {
-        setTimeout(createParticle, i * 100);
-    }
-    
-    // Continuously create new particles
-    setInterval(createParticle, 200);
-} */ 
-
 // Portfolio filtering functionality
 function initializePortfolioFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
@@ -457,49 +413,7 @@ function initializeSmoothScrolling() {
     });
 }
 
-/* Typing Animation for Hero Section
-function initializeTypingAnimation() {
-    const typingElement = document.getElementById('typing-text');
-    const texts = [
-        'Technical Marketing',
-        'B2B & B2C Narratives',
-        'Inbound Marketing Strategy',
-        'Content Marketing Wizard'
-    ];
-    
-    let textIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    
-    function typeText() {
-        const currentText = texts[textIndex];
-        
-        if (isDeleting) {
-            typingElement.textContent = currentText.substring(0, charIndex - 1);
-            charIndex--;
-        } else {
-            typingElement.textContent = currentText.substring(0, charIndex + 1);
-            charIndex++;
-        }
-        
-        let typeSpeed = isDeleting ? 25 : 50;
-        
-        if (!isDeleting && charIndex === currentText.length) {
-            typeSpeed = 2000; // Pause at end
-            isDeleting = true;
-        } else if (isDeleting && charIndex === 0) {
-            isDeleting = false;
-            textIndex = (textIndex + 1) % texts.length;
-            typeSpeed = 500; // Pause before next text
-        }
-        
-        setTimeout(typeText, typeSpeed);
-    }
-    
-    // Start typing animation after loading screen
-    setTimeout(typeText, 2500);
-}*/
-
+// Scramble animation for hero subtitle
 function initializeScrambleAnimation() {
     const typingElement = document.getElementById('typing-text');
     if (!typingElement) return;
