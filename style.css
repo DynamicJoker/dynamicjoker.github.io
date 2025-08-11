@@ -725,22 +725,55 @@ html[data-color-scheme="dark"] {
 
 /* Navigation */
 .navbar {
-  position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  background: rgba(26, 26, 46, 0.95);
+  width: 100%;
+  
+  position: fixed;
   backdrop-filter: blur(10px);
   z-index: 1000;
-  transition: all var(--animation-speed) var(--animation-curve);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  
+  background-color: rgba(10, 10, 10, 0); /* Default state is transparent */
+  border-bottom: none;
+  box-shadow: none;
+  transition: background-color 0.4s ease;
 }
 
 .navbar.scrolled {
-  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-  backdrop-filter: blur(8px);
-  background: rgba(20, 20, 30, 0.85);
-  transition: box-shadow 0.3s, background 0.3s;
+  background-color: rgba(10, 10, 10, 0.85); /* Fades in the dark background */
+  box-shadow: 0 6px 50px rgba(245, 245, 245, 0.15);
+}
+
+.navbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, var(--color-electric-blue), var(--color-accent-teal));
+  opacity: 0; /* The border is invisible by default */
+  animation: pulseGlow 3s ease-in-out infinite;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.navbar.scrolled::after {
+  opacity: 1;
+}
+
+@keyframes pulseGlow {
+  0% {
+    /* The "low" state for the teal pulse */
+    box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
+  }
+  50% {
+    /* The "peak" state: a focused, vibrant teal glow that punches through */
+    box-shadow: 0 3px 35px rgba(20, 184, 166, 0.9);
+  }
+  100% {
+    /* Returns to the low state */
+    box-shadow: 0 2px 15px rgba(20, 184, 166, 0.6);
+  }
 }
 
 .nav-container {
@@ -877,6 +910,12 @@ html[data-color-scheme="dark"] {
         opacity: 0;
         transform: translateY(200px) scale(0.5);
     }
+}
+
+
+.scramble-char {
+    color: var(--color-electric-blue-hover);
+    opacity: 0.6;
 }
 
 /* .particles {
@@ -1643,64 +1682,55 @@ html[data-color-scheme="dark"] {
 }
 
 /* Custom button overrides */
-.btn--primary {
-  background: linear-gradient(135deg, var(--color-electric-blue) 0%, var(--color-accent-teal) 100%);
-  border: none;
-  color: var(--color-dark-primary);
+.btn--primary,
+.btn--outline {
+  border: 2px solid transparent; /* Use a transparent border to prevent size jumps on hover */
   font-weight: var(--font-weight-semibold);
   position: relative;
   overflow: hidden;
+  /* This is the key for smooth transitions on all properties */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.btn--primary::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--color-accent-teal) 0%, var(--color-electric-blue) 100%);
-  transition: left 0.3s ease;
-  z-index: -1;
-}
-
-.btn--primary:hover::before {
-  left: 0;
-}
-
-.btn--primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.3);
-}
-
-.btn--outline {
-  border: 2px solid var(--color-electric-blue);
-  color: var(--color-electric-blue);
-  background: transparent;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn--outline::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: var(--color-electric-blue);
-  transition: left 0.3s ease;
-  z-index: -1;
-}
-
-.btn--outline:hover::before {
-  left: 0;
-}
-
-.btn--outline:hover {
+/* --- Primary Button (View Portfolio) --- */
+/* Default State: Solid Gradient */
+.btn--primary {
+  background: linear-gradient(135deg, var(--color-electric-blue) 0%, var(--color-accent-teal) 100%);
+  border-color: transparent;
   color: var(--color-dark-primary);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 30px rgba(0, 212, 255, 0.2);
+}
+
+/* Hover State: Becomes an Outline Button */
+.btn--primary:hover {
+  background: transparent;
+  border-color: var(--color-electric-blue);
+  color: var(--color-electric-blue);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
+}
+
+/* --- Outline Button (Contact Me) --- */
+/* Default State: Outline */
+.btn--outline {
+  background: transparent;
+  border-color: var(--color-electric-blue);
+  color: var(--color-electric-blue);
+}
+
+/* Hover State: Becomes a Solid Gradient Button */
+.btn--outline:hover {
+  background: linear-gradient(135deg, var(--color-electric-blue) 0%, var(--color-accent-teal) 100%);
+  border-color: transparent;
+  color: var(--color-dark-primary);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.2);
+}
+
+/* --- Cleanup --- */
+/* We no longer need any ::before pseudo-elements for these buttons */
+.btn--primary::before,
+.btn--outline::before {
+  display: none;
 }
 
 /* Online dot style */

@@ -5,15 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeLoadingScreen();
     initializeNavigation();
     initializeScrollAnimations();
-    // initializeParticles();
     initializePortfolioFilters();
     initializeContactForm();
     initializeSmoothScrolling();
-    initializeTypingAnimation();
+    //initializeTypingAnimation();
     enableLogoBarDragScroll();
     updateYearsExperience();
-    //initializeMouseGradient();
     initializeHeroVisuals();
+    initializeScrambleAnimation()
 });
 
 // Loading Screen Animation
@@ -50,21 +49,20 @@ function initializeNavigation() {
             navMenu.classList.remove('active');
         });
     });
-    
-    // Navbar scroll effect and active section highlighting
-    let lastScrollTop = 0;
-    window.addEventListener('scroll', () => {
+
+    // This new function just adds or removes the '.scrolled' class
+    function updateNavbarOnScroll() {
         const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
         
-        // Navbar background opacity based on scroll
-        const opacity = Math.min(scrollTop / 100, 0.95);
-        navbar.style.backgroundColor = `rgba(26, 26, 46, ${opacity})`;
-        
-        // Update active navigation link
+        if (scrollTop > 10) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
+        }
         updateActiveNavLink();
-        
-        lastScrollTop = scrollTop;
-    });
+    }
+    window.addEventListener('scroll', updateNavbarOnScroll);
+    updateNavbarOnScroll();
 }
 
 // Update active navigation link based on scroll position
@@ -459,7 +457,7 @@ function initializeSmoothScrolling() {
     });
 }
 
-// Typing Animation for Hero Section
+/* Typing Animation for Hero Section
 function initializeTypingAnimation() {
     const typingElement = document.getElementById('typing-text');
     const texts = [
@@ -500,6 +498,77 @@ function initializeTypingAnimation() {
     
     // Start typing animation after loading screen
     setTimeout(typeText, 2500);
+}*/
+
+function initializeScrambleAnimation() {
+    const typingElement = document.getElementById('typing-text');
+    if (!typingElement) return;
+
+    const texts = [
+        'Technical Marketing Strategy',
+        'B2B & B2C Narratives',
+        'Inbound Marketing Campaigns',
+        'Content Marketing Wizard'
+    ];
+    let textIndex = 0;
+    const chars = '!<>-_\\/[]{}—=+*^?#________';
+
+    let frameRequest;
+    let frame = 0;
+    let queue = [];
+
+    const setText = (newText) => {
+        const oldText = typingElement.innerText;
+        const length = Math.max(oldText.length, newText.length);
+        const promise = new Promise((resolve) => {
+            queue = [];
+            for (let i = 0; i < length; i++) {
+                const from = oldText[i] || '';
+                const to = newText[i] || '';
+                const start = Math.floor(Math.random() * 55);
+                const end = start + Math.floor(Math.random() * 55);
+                queue.push({ from, to, start, end });
+            }
+            cancelAnimationFrame(frameRequest);
+            frame = 0;
+            update();
+            setTimeout(resolve, 2000); // Wait for animation to finish
+        });
+        return promise;
+    };
+
+    const update = () => {
+        let output = '';
+        let complete = 0;
+        for (let i = 0, n = queue.length; i < n; i++) {
+            let { from, to, start, end, char } = queue[i];
+            if (frame >= end) {
+                complete++;
+                output += to;
+            } else if (frame >= start) {
+                if (!char || Math.random() < 0.28) {
+                    char = chars[Math.floor(Math.random() * chars.length)];
+                    queue[i].char = char;
+                }
+                output += `<span class="scramble-char">${char}</span>`;
+            } else {
+                output += from;
+            }
+        }
+        typingElement.innerHTML = output;
+        if (complete === queue.length) return;
+        frameRequest = requestAnimationFrame(update);
+        frame++;
+    };
+
+    async function next() {
+        await setText(texts[textIndex]);
+        textIndex = (textIndex + 1) % texts.length;
+        setTimeout(next, 2000); // Time between phrases
+    }
+    
+    // Start the animation after a delay
+    setTimeout(next, 2500);
 }
 
 // Calculate and update years of experience in hero-subtitle
