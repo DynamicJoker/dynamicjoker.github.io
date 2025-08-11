@@ -8,11 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initializePortfolioFilters();
     initializeContactForm();
     initializeSmoothScrolling();
-    enableLogoBarDragScroll();
     updateYearsExperience();
     initializeHeroVisuals();
-    initializeScrambleAnimation()
-    initializeSmartGlow()
+    initializeScrambleAnimation();
+    initializeSmartGlow() 
+    initializeLogoCarousel() 
 });
 
 // Loading Screen Animation
@@ -696,104 +696,26 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// Enable drag scrolling for logo bar - Fix #5 (Working)
-function enableLogoBarDragScroll() {
-    try {
-        const wrapper = document.querySelector('.logo-bar-wrapper');
-        const bar = wrapper ? wrapper.querySelector('.logo-bar-scroller') : null;
-        
-        if (!wrapper || !bar) {
-            console.warn('Logo bar elements not found - drag scroll disabled');
-            return;
-        }
+function initializeLogoCarousel() {
+    const logos = document.querySelectorAll('.logo-bar .logo-item');
+    if (logos.length === 0) return;
 
-        let isDragging = false;
-        let startX = 0;
-        let currentTranslate = 0;
-        let startTranslateOnDrag = 0;
-        let animationFrameId = null;
+    let currentIndex = 0;
+    const intervalTime = 3000; // Time each logo is highlighted
 
-        const speed = 50; // Pixels per second
-
-        const animate = () => {
-            if (!isDragging) {
-                currentTranslate -= speed / 60;
-                
-                const loopWidth = bar.scrollWidth / 2;
-                // Check for wrapping in BOTH directions.
-                
-                // 1. If it goes too far left, wrap it to the beginning.
-                if (currentTranslate <= -loopWidth) {
-                    currentTranslate += loopWidth;
-                }
-                
-                // 2. If it goes too far right (from dragging), wrap it to the end.
-                if (currentTranslate > 0) {
-                    currentTranslate -= loopWidth;
-                }
-                
-                bar.style.transform = `translateX(${currentTranslate}px)`;
-            }
-            animationFrameId = requestAnimationFrame(animate);
-        };
-        
-        const onDragStart = (pageX) => {
-            isDragging = true;
-            wrapper.classList.add('dragging');
-            bar.classList.add('dragging');
-            startX = pageX;
-            startTranslateOnDrag = currentTranslate;
-            document.body.style.userSelect = 'none';
-        };
-        
-        const onDragMove = (pageX) => {
-            if (!isDragging) return;
-            const dx = pageX - startX;
-            currentTranslate = startTranslateOnDrag + dx;
-            bar.style.transform = `translateX(${currentTranslate}px)`;
-        };
-        
-        const onDragEnd = () => {
-            if (!isDragging) return;
-            isDragging = false;
-            wrapper.classList.remove('dragging');
-            bar.classList.remove('dragging');
-            
-            // Normalize the final position to keep the loop clean.
-            const loopWidth = bar.scrollWidth / 2;
-            currentTranslate = currentTranslate % loopWidth;
-
-            document.body.style.userSelect = '';
-        };
-
-        function bindDragEvents() {
-            wrapper.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                onDragStart(e.pageX);
-            });
-            window.addEventListener('mousemove', (e) => {
-                onDragMove(e.pageX);
-            });
-            window.addEventListener('mouseup', onDragEnd);
-            window.addEventListener('mouseleave', onDragEnd);
-
-            wrapper.addEventListener('touchstart', (e) => {
-                onDragStart(e.touches[0].pageX);
-            }, { passive: true });
-            window.addEventListener('touchmove', (e) => {
-                 if (isDragging) {
-                    onDragMove(e.touches[0].pageX);
-                 }
-            });
-            window.addEventListener('touchend', onDragEnd);
-        }
-        
-        bindDragEvents();
-        animate();
-
-    } catch (error) {
-        console.error('Logo bar drag scroll initialization failed:', error);
+    function updateSpotlight() {
+        logos.forEach((logo, index) => {
+            logo.classList.toggle('active', index === currentIndex);
+        });
     }
+
+    updateSpotlight();
+
+    // Set an interval to advance the spotlight
+    setInterval(() => {
+        currentIndex = (currentIndex + 1) % logos.length;
+        updateSpotlight();
+    }, intervalTime);
 }
 
 // Add preload for better performance

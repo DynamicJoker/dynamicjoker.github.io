@@ -1741,64 +1741,89 @@ html[data-color-scheme="dark"] {
   50% { opacity: 0.5; transform: scale(1.3); }
 }
 
-/* New Scrolling Logo bar implementation */
+/* New Logo Bar */
 .logo-bar-section {
-  background: rgba(255,255,255,0.03);
   padding: 32px 0;
-  overflow: hidden;
-}
-.logo-bar-wrapper {
-  width: 100%;
-  overflow: hidden;
-  position: relative;
-}
-.logo-bar-wrapper.dragging {
-  cursor: grabbing;
-}
-.logo-bar-scroller {
-    display: flex;
-    width: max-content;
-}
-.logo-bar-scroller.dragging {
-    cursor: grabbing;
+  background: rgba(255,255,255,0.03);
 }
 
+/* This wrapper is now just a standard container */
+.logo-bar-wrapper {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px; /* Add some horizontal padding for smaller screens */
+}
+
+/* This is the flex container that holds and centers the logos */
 .logo-bar {
   display: flex;
-  align-items: center; /* Vertical alignment */
-  flex-shrink: 0;
-  width: 100vw;
-  justify-content: space-around;
-  gap: 48px;
+  justify-content: center; /* Horizontally center the logos */
+  align-items: center;
+  flex-wrap: wrap; /* Allow logos to wrap on narrow screens */
+  gap: 60px;
 }
 
-/* --- Consistent LOGO STYLING --- */
-.logo-img {
-  /* 1. Single, consistent height for all logos */
-  height: 40px; /* Adjust for size */
+.logo-item {
+  position: relative; /* Critical: For positioning the pseudo-element */
+}
 
-  /* 2. Auto-adjust width */
-  width: auto;
-
-  /* 3. Set a max-width to prevent very wide logos from being too dominant */
-  max-width: 150px; /* Adjust this value as needed */
+.logo-item::after {
+  content: '';
+  position: absolute;
+  bottom: -15px; /* Position it below the logo */
+  left: 50%;
   
-  /* Filter and opacity styles remain the same */
-  filter: grayscale(1) brightness(0.8);
-  opacity: 0.7;
-  transition: filter 0.3s, opacity 0.3s;
+  /* Oval shape */
+  width: 80%;
+  height: 10px;
+  /* Color of shadow */
+  background: radial-gradient(ellipse, rgba(0, 212, 255, 0.4) 0%, transparent 80%);
+  filter: blur(5px);
+  transform: translateX(-50%) perspective(100px) rotateX(70deg);
+  
+  /* Start hidden and transition smoothly */
+  opacity: 0;
+  transition: opacity 0.5s ease;
 }
 
-.logo-img:hover {
-  filter: grayscale(0) brightness(1);
+.logo-img {
+  height: 40px;
+  max-width: 150px;
+  width: auto;
+  flex-shrink: 0;
+  
+  /* Default "dimmed" state */
+  opacity: 0.6;
+  filter: grayscale(1) brightness(0.7);
+  transform: scale(1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* --- The Active State --- */
+
+/* When the wrapper is active, style the image inside it */
+.logo-item.active .logo-img,
+.logo-item:hover .logo-img { /* Also apply on direct hover */
+  opacity: 1;
+  filter: grayscale(0) brightness(1) drop-shadow(0 5px 15px rgba(0, 212, 255, 0.2));
+  transform: scale(1.1);
+}
+
+/* When the wrapper is active, reveal the glint */
+.logo-item.active::after,
+.logo-item:hover::after {
   opacity: 1;
 }
 
-/* Updated media query for mobile */
+/* Your original mobile adjustments are still perfect */
 @media (max-width: 600px) {
-  .logo-bar { gap: 24px; }
+  .logo-bar { gap: 30px; }
   .logo-img { 
-      height: 32px; /* Adjust mobile height */
+      height: 32px;
       max-width: 120px;
+  }
+  .logo-item::after {
+    bottom: -10px;
+    filter: blur(3px);
   }
 }
