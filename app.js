@@ -86,24 +86,24 @@ function initializeSmartGlow() {
     
     // --- THE FIX: This function now finds ALL titles ---
     function cacheTitlePositions() {
-        // 1. Select both the hero title and the section titles
+        // Select both the hero title and the section titles
         const heroTitle = document.querySelector('.hero-name');
         const sectionTitles = document.querySelectorAll('.section-title');
 
-        // 2. Create a combined list of all title elements
+        // Create a combined list of all title elements
         const allTitles = [];
         if (heroTitle) {
             allTitles.push(heroTitle); // Add the hero title first
         }
         allTitles.push(...sectionTitles); // Add the rest of the titles
 
-        // 3. Map over the combined list to get their positions
+        // Map over the combined list to get positions
         titleData = allTitles.map(title => {
-            const rect = title.getBoundingClientRect();
-            return {
-                top: rect.top + window.scrollY,
-                centerX: rect.left + window.scrollY + rect.width / 2
-            };
+        const rect = title.getBoundingClientRect();
+        return {
+            top: rect.top + window.scrollY,
+            centerX: rect.left + rect.width / 2
+        };
         });
     }
 

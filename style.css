@@ -1747,41 +1747,70 @@ html[data-color-scheme="dark"] {
   background: rgba(255,255,255,0.03);
 }
 
-/* This wrapper is now just a standard container */
 .logo-bar-wrapper {
-  max-width: 1000px;
+  max-width: 1200px; /* Widening the wrapper to accommodate the label */
   margin: 0 auto;
-  padding: 0 20px; /* Add some horizontal padding for smaller screens */
+  padding: 0 20px;
 }
 
-/* This is the flex container that holds and centers the logos */
 .logo-bar {
   display: flex;
-  justify-content: center; /* Horizontally center the logos */
+  justify-content: center;
   align-items: center;
-  flex-wrap: wrap; /* Allow logos to wrap on narrow screens */
-  gap: 60px;
+  flex-wrap: nowrap; /* Keep the label and logos on a single line */
+  gap: 40px;
 }
 
+.logo-bar-label {
+  color: var(--color-text);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-lg);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  flex-shrink: 0;
+  position: relative; /* Required to position the pseudo-element */
+  padding-bottom: 10px; /* Add space for the line underneath */
+  background: transparent;
+  border: none;
+  backdrop-filter: none;
+}
+
+/* Gradient underline */
+.logo-bar-label::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 70%;
+  height: 2px;
+  background: linear-gradient(to right, transparent 0%, var(--color-electric-blue) 50%, transparent 100%);
+}
+
+/* This NEW container holds just the logos */
+.logo-set-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 40px; /* Spacing between the logos themselves */
+}
+
+/* --- Your existing logo styles remain largely the same --- */
+
 .logo-item {
-  position: relative; /* Critical: For positioning the pseudo-element */
+  position: relative;
 }
 
 .logo-item::after {
   content: '';
   position: absolute;
-  bottom: -15px; /* Position it below the logo */
+  bottom: -15px;
   left: 50%;
-  
-  /* Oval shape */
   width: 80%;
   height: 10px;
-  /* Color of shadow */
   background: radial-gradient(ellipse, rgba(0, 212, 255, 0.4) 0%, transparent 80%);
   filter: blur(5px);
   transform: translateX(-50%) perspective(100px) rotateX(70deg);
-  
-  /* Start hidden and transition smoothly */
   opacity: 0;
   transition: opacity 0.5s ease;
 }
@@ -1791,33 +1820,42 @@ html[data-color-scheme="dark"] {
   max-width: 150px;
   width: auto;
   flex-shrink: 0;
-  
-  /* Default "dimmed" state */
   opacity: 0.6;
   filter: grayscale(1) brightness(0.7);
   transform: scale(1);
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* --- The Active State --- */
-
-/* When the wrapper is active, style the image inside it */
 .logo-item.active .logo-img,
-.logo-item:hover .logo-img { /* Also apply on direct hover */
+.logo-item:hover .logo-img {
   opacity: 1;
   filter: grayscale(0) brightness(1) drop-shadow(0 5px 15px rgba(0, 212, 255, 0.2));
   transform: scale(1.1);
 }
 
-/* When the wrapper is active, reveal the glint */
 .logo-item.active::after,
 .logo-item:hover::after {
   opacity: 1;
 }
 
-/* Your original mobile adjustments are still perfect */
+@media (max-width: 768px) {
+  .logo-bar {
+    flex-direction: column;
+    gap: 35px; 
+  }
+
+  .logo-bar-label {
+    font-size: var(--font-size-base); /* This is 14px */
+  }
+
+  .logo-set-container {
+    flex-wrap: wrap;
+    justify-content: center; /* Ensure wrapped logos are centered */
+  }
+}
+
 @media (max-width: 600px) {
-  .logo-bar { gap: 30px; }
+  .logo-set-container { gap: 30px; }
   .logo-img { 
       height: 32px;
       max-width: 120px;
