@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
     updateYearsExperience();
     initializeHeroVisuals();
     initializeScrambleAnimation();
-    initializeSmartGlow() 
-    initializeLogoCarousel() 
+    initializeSmartGlow();
+    initializeLogoCarousel();
 });
 
 // Loading Screen Animation
@@ -84,7 +84,6 @@ function initializeSmartGlow() {
 
     let titleData = [];
     
-    // --- THE FIX: This function now finds ALL titles ---
     function cacheTitlePositions() {
         // Select both the hero title and the section titles
         const heroTitle = document.querySelector('.hero-name');
@@ -470,24 +469,28 @@ function initializeScrambleAnimation() {
     let frameRequest;
     let frame = 0;
     let queue = [];
+    let resolvePromise; // This will hold the promise's resolve function
 
+    // THE FIX: The promise now resolves from within the update loop
     const setText = (newText) => {
         const oldText = typingElement.innerText;
         const length = Math.max(oldText.length, newText.length);
         const promise = new Promise((resolve) => {
-            queue = [];
-            for (let i = 0; i < length; i++) {
-                const from = oldText[i] || '';
-                const to = newText[i] || '';
-                const start = Math.floor(Math.random() * 55);
-                const end = start + Math.floor(Math.random() * 55);
-                queue.push({ from, to, start, end });
-            }
-            cancelAnimationFrame(frameRequest);
-            frame = 0;
-            update();
-            setTimeout(resolve, 2000); // Wait for animation to finish
+            resolvePromise = resolve; // Store the resolve function to be called later
         });
+        
+        queue = [];
+        for (let i = 0; i < length; i++) {
+            const from = oldText[i] || '';
+            const to = newText[i] || '';
+            const start = Math.floor(Math.random() * 55);
+            const end = start + Math.floor(Math.random() * 55);
+            queue.push({ from, to, start, end });
+        }
+        
+        cancelAnimationFrame(frameRequest);
+        frame = 0;
+        update(); // Start the animation
         return promise;
     };
 
@@ -510,7 +513,10 @@ function initializeScrambleAnimation() {
             }
         }
         typingElement.innerHTML = output;
-        if (complete === queue.length) return;
+        if (complete === queue.length) {
+            resolvePromise(); // Resolve the promise now that it's done
+            return; // Stop the animation loop
+        }
         frameRequest = requestAnimationFrame(update);
         frame++;
     };
