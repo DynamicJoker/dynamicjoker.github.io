@@ -735,13 +735,11 @@ html[data-color-scheme="dark"] {
   transition: background-color 0.4s ease, box-shadow 0.4s ease;
 }
 
-/* 2. Base glow when scrolled (Unchanged) */
 .navbar.scrolled {
   background-color: rgba(10, 10, 10, 0.85);
   box-shadow: 0 6px 50px rgba(245, 245, 245, 0.1);
 }
 
-/* 3. The new FOCUSED gradient glow */
 .navbar::after {
   content: '';
   position: absolute;
@@ -749,11 +747,7 @@ html[data-color-scheme="dark"] {
   bottom: -2px;
   width: 100%;
   height: 2px;
-  
-  /* --- THE KEY CHANGE --- */
-  /* We now use a radial gradient for the background. JS will control its variables. */
-  /* It's an ellipse, with a variable size, positioned at a variable X-coordinate. */
-  background: radial-gradient(
+    background: radial-gradient(
     ellipse var(--glow-size, 50px 5px) at var(--glow-position-x, 50%) 50%,
     var(--glow-color, rgba(20, 184, 166, 0.5)) 0%,
     transparent 80%
@@ -986,6 +980,15 @@ html[data-color-scheme="dark"] {
   51%, 100% { opacity: 0; }
 }
 
+#typing-text {
+  transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+#typing-text.scramble-fade-out {
+  opacity: 0;
+  transform: translateY(10px); /* Adds a subtle slide down effect */
+}
+
 .hero-subtitle {
   font-size: var(--font-size-lg);
   color: var(--color-text-secondary);
@@ -1194,7 +1197,7 @@ html[data-color-scheme="dark"] {
 }
 
 
-/* --- Styles for the new two-column "Tools & Platforms" grid --- */
+/* --- Styles for the new two-column "Tools & Platforms" grid (work_in_progress)--- */
 
 /* This container holds the rows */
 .skill-grid {
@@ -1211,7 +1214,7 @@ html[data-color-scheme="dark"] {
 
 /* This is the individual skill text */
 .skill-row .skill-item {
-  flex: 1; /* Each item takes up half the space in a row */
+  flex: 1;
   padding: var(--space-8) 0;
   font-size: var(--font-size-base);
   color: var(--color-text-secondary);
@@ -1223,12 +1226,10 @@ html[data-color-scheme="dark"] {
   color: var(--color-electric-blue);
 }
 
-/* This adds padding to the second item to make space for the divider */
 .skill-row .skill-item:not(:first-child) {
   padding-left: 20px;
 }
 
-/* This creates the FADING GRADIENT DIVIDER on the second item */
 .skill-row .skill-item:not(:first-child)::before {
   content: '';
   position: absolute;
@@ -1237,9 +1238,7 @@ html[data-color-scheme="dark"] {
   transform: translateY(-50%);
   width: 2px;
   height: 80%;
-  
-  /* The vertical gradient that fades at top and bottom */
-  background: linear-gradient(
+    background: linear-gradient(
     to bottom, 
     transparent 0%, 
     var(--color-electric-blue) 50%, 
