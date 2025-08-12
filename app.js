@@ -203,63 +203,17 @@ function initializeScrollAnimations() {
     };
     
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-                
-                // Animate timeline items
-                if (entry.target.contains(timeline)) {
-                    animateTimelineItems();
-                }
-                
-                // Animate skill tags
-                if (entry.target.id === 'skills') {
-                    animateSkillTags();
-                }
-                
-                // Animate service cards
-                if (entry.target.id === 'services') {
-                    animateServiceCards();
-                }
-            }
-        });
-    }, observerOptions);
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            // The observer's only job now is to add the .visible class.
+            observer.unobserve(entry.target); 
+        }
+    });
+}, observerOptions);
     
     sections.forEach(section => {
         observer.observe(section);
-    });
-}
-
-// Animate timeline items
-function animateTimelineItems() {
-    const timelineItems = document.querySelectorAll('.timeline-item');
-    timelineItems.forEach((item, index) => {
-        setTimeout(() => {
-            item.style.opacity = '1';
-            item.style.transform = 'translateY(0)';
-        }, index * 200);
-    });
-}
-
-// Animate skill tags
-function animateSkillTags() {
-    const skillTags = document.querySelectorAll('.skill-tag');
-    skillTags.forEach((tag, index) => {
-        setTimeout(() => {
-            tag.style.opacity = '1';
-            tag.style.transform = 'translateY(0) scale(1)';
-        }, index * 50);
-    });
-}
-
-// Animate service cards
-function animateServiceCards() {
-    const serviceCards = document.querySelectorAll('.service-card');
-    serviceCards.forEach((card, index) => {
-        setTimeout(() => {
-            card.style.opacity = '1';
-            card.style.transform = 'translateY(0)';
-        }, index * 150);
     });
 }
 
@@ -698,21 +652,6 @@ const throttledScrollHandler = throttle(() => {
 }, 100);
 
 window.addEventListener('scroll', throttledScrollHandler);
-
-// Initialize CSS animations for elements that need them
-function initializeElementAnimations() {
-    // Set initial states for animated elements
-    const animatedElements = document.querySelectorAll('.timeline-item, .skill-tag, .service-card');
-    
-    animatedElements.forEach(element => {
-        element.style.opacity = '0';
-        element.style.transform = 'translateY(20px)';
-        element.style.transition = 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
-    });
-}
-
-// Call initialization functions
-initializeElementAnimations();
 
 // Add loading states and error handling
 window.addEventListener('error', (e) => {
