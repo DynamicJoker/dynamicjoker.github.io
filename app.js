@@ -628,7 +628,6 @@ function initializeParallaxEffect() {
 
 // Removed hover effects for interactive elements in JS - Moved to CSS only
 
-
 // Performance optimization - throttle scroll events
 function throttle(func, limit) {
     let inThrottle;
