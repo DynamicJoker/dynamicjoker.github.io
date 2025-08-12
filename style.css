@@ -1110,16 +1110,21 @@ html[data-color-scheme="dark"] {
   align-items: center;
   gap: var(--space-16);
   padding: var(--space-20);
-  background: rgba(255, 255, 255, 0.05);
   border-radius: var(--radius-lg);
+  
+  /* The Glassmorphism Effect */
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
+
   transition: all var(--animation-speed) var(--animation-curve);
 }
 
 .highlight-item:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-color: var(--color-electric-blue);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
 }
 
 .highlight-icon {

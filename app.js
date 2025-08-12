@@ -457,10 +457,7 @@ function initializeScrambleAnimation() {
     const typingElement = document.getElementById('typing-text');
     if (!typingElement) return;
 
-    // --- Browser Detection ---
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
-    // --- Animation Text & Index ---
+    // --- State & Configuration ---
     const texts = [
         'Technical Marketing Strategy',
         'B2B & B2C Narratives',
@@ -468,60 +465,65 @@ function initializeScrambleAnimation() {
         'Content Marketing Wizard'
     ];
     let textIndex = 0;
-    let runAnimation;
+    
+    // --- Performance & Browser Detection ---
+    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+    let useFallback = isSafari; // Start by using fallback for Safari
+    let performanceCheckComplete = isSafari; // No need to check performance on Safari
 
-    // --- Conditional Logic: Choose the right animation ---
-    if (isSafari) {
-        // --- Fallback Animation: Simple & Performant Fade ---
-        runAnimation = (newText) => {
-            return new Promise((resolve) => {
-                const fadeOutDuration = 300; // Must match CSS transition time
-                const fadeInDuration = 300;
+    // --- Animation Function 1: Simple & Performant Fade (The Fallback) ---
+    const runFadeAnimation = (newText) => {
+        return new Promise((resolve) => {
+            const FADE_DURATION = 300;
+            typingElement.classList.add('scramble-fade-out');
+            setTimeout(() => {
+                typingElement.innerText = newText;
+                typingElement.classList.remove('scramble-fade-out');
+                setTimeout(resolve, FADE_DURATION);
+            }, FADE_DURATION);
+        });
+    };
 
-                // 1. Fade out the old text
-                typingElement.classList.add('scramble-fade-out');
-
-                setTimeout(() => {
-                    typingElement.innerText = newText;
-                    typingElement.classList.remove('scramble-fade-out');
-                    setTimeout(resolve, fadeInDuration);
-                }, fadeOutDuration);
-            });
-        };
-
-    } else {
-        // --- Original Animation: Complex Scramble (for Chrome, Firefox, etc.) ---
+    // --- Animation Function 2: Full Scramble with Performance Check ---
+    const runScrambleAnimation = (newText) => {
         const chars = '!<>-_\\/[]{}—=+*^?#________';
-        let frameRequest;
-        let frame = 0;
-        let queue = [];
-        let resolvePromise;
+        let frameRequest, frame = 0, queue = [], resolvePromise;
+        
+        // Performance measurement variables
+        let frameCount = 0;
+        let startTime = performance.now();
+        const FPS_THRESHOLD = 45; // If FPS is below this, switch to fallback
+        const CHECK_DURATION = 1000; // Measure for 1 second
 
-        const setText_scramble = (newText) => {
+        return new Promise((resolve) => {
+            resolvePromise = resolve;
             const oldText = typingElement.innerText;
             const length = Math.max(oldText.length, newText.length);
-            const promise = new Promise((resolve) => {
-                resolvePromise = resolve;
-            });
-
-            queue = [];
             for (let i = 0; i < length; i++) {
-                const from = oldText[i] || '';
-                const to = newText[i] || '';
-                const start = Math.floor(Math.random() * 55);
-                const end = start + Math.floor(Math.random() * 55);
+                const from = oldText[i] || '', to = newText[i] || '';
+                const start = Math.floor(Math.random() * 55), end = start + Math.floor(Math.random() * 55);
                 queue.push({ from, to, start, end });
             }
-
             cancelAnimationFrame(frameRequest);
-            frame = 0;
             update();
-            return promise;
-        };
+        });
 
-        const update = () => {
-            let output = '';
-            let complete = 0;
+        function update() {
+            // --- Performance Check (runs only once) ---
+            if (!performanceCheckComplete) {
+                const elapsedTime = performance.now() - startTime;
+                frameCount++;
+                if (elapsedTime >= CHECK_DURATION) {
+                    const fps = frameCount / (elapsedTime / 1000);
+                    if (fps < FPS_THRESHOLD) {
+                        useFallback = true; // Set the flag to use the fallback next time
+                    }
+                    performanceCheckComplete = true; // Mark the check as done
+                }
+            }
+
+            // --- Animation Logic (unchanged) ---
+            let output = '', complete = 0;
             for (let i = 0, n = queue.length; i < n; i++) {
                 let { from, to, start, end, char } = queue[i];
                 if (frame >= end) {
@@ -543,21 +545,25 @@ function initializeScrambleAnimation() {
                 resolvePromise();
                 return;
             }
-
             frameRequest = requestAnimationFrame(update);
             frame++;
-        };
-        
-        runAnimation = setText_scramble;
-    }
+        }
+    };
 
+    // --- Main Loop ---
     async function next() {
-        await runAnimation(texts[textIndex]);
+        const text = texts[textIndex];
+        
+        // Choose which animation to run based on flags
+        if (useFallback) {
+            await runFadeAnimation(text);
+        } else {
+            await runScrambleAnimation(text);
+        }
+        
         textIndex = (textIndex + 1) % texts.length;
-        setTimeout(next, 2000); // Wait 2 seconds between phrases
+        setTimeout(next, 2000);
     }
-    
-    // Start the animation after the initial page load delay
     setTimeout(next, 2500);
 }
 
