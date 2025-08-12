@@ -1101,10 +1101,10 @@ html[data-color-scheme="dark"] {
 
 .about-highlights {
   display: flex;
-  gap: var(--space-24);
-  align-items: flex-start;
   flex-wrap: wrap;
-  transition: min-height 0.4s var(--ease-standard);
+  gap: var(--space-24);
+  /* Remove the transition on min-height */
+  align-items: flex-start;
 }
 
 .highlight-item {
@@ -1112,38 +1112,15 @@ html[data-color-scheme="dark"] {
   padding: var(--space-20);
   border-radius: var(--radius-lg);
   cursor: pointer;
-  overflow: hidden;
   background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-
-  /* Define transitions for size, background, and now opacity */
-  transition: background 0.3s ease, 
-              opacity 0.3s ease;
+  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
 }
 
-/* This state makes the card fade out before it is removed */
-.highlight-item.closing {
-    opacity: 0;
-    /* Kep the flex value so the layout doesn't jump! */
-    flex: 1 1 100%;
-    pointer-events: none; /* Prevent clicking a closing card */
-}
-
-.highlight-header, .highlight-icon, .highlight-title { 
-  display: flex;
-  align-items: center;
-  gap: var(--space-16);
-}
-.highlight-icon { font-size: 1.5rem; flex-shrink: 0; }
-.highlight-title { font-size: var(--font-size-lg); }
-
-.highlight-description {
-  max-height: 0;
-  opacity: 0;
-  transform: translateY(10px);
-  margin-top: 0;
-  transition: max-height 0.4s ease, opacity 0.4s ease, transform 0.4s ease, margin-top 0.4s ease;
+.highlight-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
 }
 
 .highlight-item:hover {
@@ -1152,27 +1129,30 @@ html[data-color-scheme="dark"] {
   border-color: var(--color-electric-blue);
 }
 
+.highlight-description {
+  /* Animate max-height for the expand/collapse effect */
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden; /* Important: hide the content when collapsed */
+  margin-top: 0;
+  transition: max-height 0.5s ease-out, opacity 0.5s ease-out, margin-top 0.5s ease-out;
+}
+
+/* When a highlight-item gets the 'expanded' class */
 .highlight-item.expanded {
-  flex: 1 1 100%; 
-  background: rgba(255, 255, 255, 0.1);
+  cursor: default;
   border-color: var(--color-electric-blue);
   box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
-  cursor: default;
-  transition: flex 0.5s var(--ease-standard), 
-              background 0.3s ease, 
-              opacity 0.3s ease;
+}
+
+.highlight-item.expanded:hover {
+  transform: translateY(0); /* Disable hover movement when expanded */
 }
 
 .highlight-item.expanded .highlight-description {
   max-height: 200px;
   opacity: 1;
-  transform: translateY(0);
   margin-top: var(--space-20);
-}
-
-.highlight-item.expanded:hover,
-.highlight-item.closing:hover {
-    transform: none;
 }
 
 .highlight-icon {
@@ -1301,7 +1281,12 @@ html[data-color-scheme="dark"] {
   opacity: 0.5; /* Makes the line subtle */
 }
 
-
+/* CSS to replace mouse hover functionality in JS */
+.service-card:hover,
+.portfolio-card:hover,
+.skill-category:hover {
+  transform: translateY(-10px);
+}
 
 /* Services Section */
 .services-grid {

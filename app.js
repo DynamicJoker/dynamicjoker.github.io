@@ -14,6 +14,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSmartGlow();
     initializeLogoCarousel();
     initializeExpandableHighlights();
+    cacheSectionPositions();
+    initializeParallaxEffect(); 
 });
 
 // Loading Screen Animation
@@ -157,27 +159,36 @@ function initializeSmartGlow() {
     window.addEventListener('resize', cacheTitlePositions);
 }
 
+let sectionData = [];
+// Read DOM properties and store them in cache
+function cacheSectionPositions() {
+    const sections = document.querySelectorAll('section[id]');
+    sectionData = Array.from(sections).map(section => {
+        return {
+            id: section.getAttribute('id'),
+            // Read from DOM here, only once.
+            top: section.offsetTop - 100, // Apply the offset during caching
+            height: section.offsetHeight
+        };
+    });
+}
+
 // Update active navigation link based on scroll position
 function updateActiveNavLink() {
-    const sections = document.querySelectorAll('section[id]');
+    const scrollY = window.scrollY;
     const navLinks = document.querySelectorAll('.nav-link');
-    
-    let currentSection = '';
-    
-    sections.forEach(section => {
-        const sectionTop = section.offsetTop - 100;
-        const sectionHeight = section.offsetHeight;
-        
-        if (window.scrollY >= sectionTop && window.scrollY < sectionTop + sectionHeight) {
-            currentSection = section.getAttribute('id');
+    let currentSectionId = '';
+
+    // Read from cached data, instead of DOM
+    for (const section of sectionData) {
+        if (scrollY >= section.top && scrollY < section.top + section.height) {
+            currentSectionId = section.id;
+            break; // Exit the loop when it finds an active section
         }
-    });
-    
+    }
+    // Write to the DOM
     navLinks.forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('href') === `#${currentSection}`) {
-            link.classList.add('active');
-        }
+        link.classList.toggle('active', link.getAttribute('href') === `#${currentSectionId}`);
     });
 }
 
@@ -639,51 +650,30 @@ function closeNotification(notification) {
 }
 
 // Parallax effect for hero section
-window.addEventListener('scroll', () => {
-    const navbar = document.getElementById('navbar');
-    if (window.scrollY > 40) {
-        navbar.classList.add('scrolled');
-    } else {
-        navbar.classList.remove('scrolled');
-    }
-    const scrolled = window.pageYOffset;
-    const hero = document.querySelector('.hero');
+function initializeParallaxEffect() {
     const heroBackground = document.querySelector('.hero-background');
-    if (hero && heroBackground) {
+    if (!heroBackground) return;
+
+    let isTicking = false;
+
+    function updateParallax() {
+        const scrolled = window.pageYOffset;
         const rate = scrolled * -0.5;
+        // The transform will only be updated when the browser is ready to paint
         heroBackground.style.transform = `translateY(${rate}px)`;
+        isTicking = false;
     }
-});
 
-// Add hover effects for interactive elements
-document.addEventListener('mouseover', (e) => {
-    // Add hover effect to cards
-    if (e.target.closest('.service-card, .portfolio-card, .skill-category')) {
-        const card = e.target.closest('.service-card, .portfolio-card, .skill-category');
-        card.style.transform = 'translateY(-10px)';
-    }
-    
-    // Add hover effect to buttons
-    if (e.target.closest('.btn')) {
-        const btn = e.target.closest('.btn');
-        if (btn.classList.contains('btn--primary')) {
-            btn.style.boxShadow = '0 10px 30px rgba(0, 212, 255, 0.3)';
+    document.addEventListener('scroll', () => {
+        if (!isTicking) {
+            window.requestAnimationFrame(updateParallax);
+            isTicking = true;
         }
-    }
-});
+    });
+}
 
-document.addEventListener('mouseout', (e) => {
-    // Remove hover effects
-    if (e.target.closest('.service-card, .portfolio-card, .skill-category')) {
-        const card = e.target.closest('.service-card, .portfolio-card, .skill-category');
-        card.style.transform = '';
-    }
-    
-    if (e.target.closest('.btn')) {
-        const btn = e.target.closest('.btn');
-        btn.style.boxShadow = '';
-    }
-});
+// Removed hover effects for interactive elements in JS - Moved to CSS only
+
 
 // Performance optimization - throttle scroll events
 function throttle(func, limit) {
@@ -698,6 +688,9 @@ function throttle(func, limit) {
         }
     };
 }
+
+// New event listener to update scroll cache positions if window size changes
+window.addEventListener('resize', cacheSectionPositions);
 
 // Apply throttling to scroll events
 const throttledScrollHandler = throttle(() => {
@@ -764,94 +757,31 @@ function initializeLogoCarousel() {
 
 function initializeExpandableHighlights() {
     const highlightsContainer = document.querySelector('.about-highlights');
-    const highlights = document.querySelectorAll('.highlight-item');
-    const CLOSE_DURATION = 300; // Must match opacity transition in CSS
+    if (!highlightsContainer) return;
 
-    if (!highlightsContainer || highlights.length === 0) return;
-
-    let isAnimating = false;
-
-    const updateContainerHeight = () => {
-        const currentlyExpanded = highlightsContainer.querySelector('.expanded');
-        if (currentlyExpanded) {
-            // Calculate the height needed: the card's scroll height plus the container's vertical padding
-            const requiredHeight = currentlyExpanded.scrollHeight;
-            highlightsContainer.style.minHeight = `${requiredHeight}px`;
-        } else {
-            // If nothing is expanded, remove the fixed height
-            highlightsContainer.style.minHeight = '0px';
-        }
-    };
-
-    const closeAllHighlights = () => {
-        const currentlyExpanded = highlightsContainer.querySelector('.expanded');
-        if (isAnimating || !currentlyExpanded) return;
-
-        isAnimating = true;
-        // Set the min-height to 0, which will trigger the CSS transition to shrink
-        highlightsContainer.style.minHeight = '0px';
-        
-        // Remove the expanded class
-        currentlyExpanded.classList.remove('expanded');
-        
-        // Unlock after the transition
-        setTimeout(() => {
-            isAnimating = false;
-        }, 500); // Should match the longest transition
-    };
+    const highlights = highlightsContainer.querySelectorAll('.highlight-item');
 
     highlights.forEach(item => {
         item.addEventListener('click', (event) => {
-            if (isAnimating) return;
-            event.stopPropagation();
+            event.stopPropagation(); // Prevent the document click listener from firing
+            
+            // Check if the clicked item is already expanded
+            const isExpanded = item.classList.contains('expanded');
 
-            const isAlreadyExpanded = item.classList.contains('expanded');
-            const currentlyExpanded = highlightsContainer.querySelector('.expanded');
+            // First, close any item that is currently open
+            highlightsContainer.querySelector('.expanded')?.classList.remove('expanded');
 
-            if (isAlreadyExpanded) {
-                closeAllHighlights();
-                return;
-            }
-
-            if (currentlyExpanded) {
-                isAnimating = true;
-
-                const currentHeight = highlightsContainer.getBoundingClientRect().height;
-                highlightsContainer.style.minHeight = `${currentHeight}px`;
-
-                // Fade out the old card
-                currentlyExpanded.classList.add('closing');
-
-                // Wait for the fade-out to finish
-                setTimeout(() => {
-                    // Swap the classes invisibly
-                    currentlyExpanded.classList.remove('expanded', 'closing');
-                    item.classList.add('expanded');
-
-                    // Calculate the new required height and let the container animate to it
-                    updateContainerHeight();
-
-                    // Unlock animations
-                    setTimeout(() => {
-                        isAnimating = false;
-                    }, 500);
-
-                }, CLOSE_DURATION);
-
-            } else {
-                // First card open
-                isAnimating = true;
+            // If the clicked item was not the one that was just closed, open it.
+            if (!isExpanded) {
                 item.classList.add('expanded');
-                // Calculate and set the height to animate to
-                updateContainerHeight();
-                
-                setTimeout(() => {
-                    isAnimating = false;
-                }, 500);
             }
         });
     });
-    document.addEventListener('click', closeAllHighlights);
+
+    // Add a listener to close an expanded item by clicking outside
+    document.addEventListener('click', () => {
+        highlightsContainer.querySelector('.expanded')?.classList.remove('expanded');
+    });
 }
 
 // Add preload for better performance
