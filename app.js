@@ -15,7 +15,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeLogoCarousel();
     initializeExpandableHighlights();
     cacheSectionPositions();
-    initializeParallaxEffect(); 
+    initializeParallaxEffect();
+    initializeHorizontalScroller();
 });
 
 // Loading Screen Animation
@@ -719,6 +720,50 @@ function initializeExpandableHighlights() {
     // Add a listener to close an expanded item by clicking outside
     document.addEventListener('click', () => {
         highlightsContainer.querySelector('.expanded')?.classList.remove('expanded');
+    });
+}
+
+function initializeHorizontalScroller() {
+    const scroller = document.querySelector('.experience-scroller');
+    if (!scroller) return;
+
+    // --- 1. Mouse Wheel Scrolling ---
+    scroller.addEventListener('wheel', (evt) => {
+        // Prevent the default vertical scroll
+        evt.preventDefault();
+        // Add the vertical scroll amount to the horizontal scroll position
+        scroller.scrollLeft += evt.deltaY;
+    });
+
+    // --- 2. Drag to Scroll ---
+    let isDown = false;
+    let startX;
+    let scrollLeft;
+
+    scroller.addEventListener('mousedown', (e) => {
+        isDown = true;
+        scroller.classList.add('active');
+        // Get the initial mouse position and scroll position
+        startX = e.pageX - scroller.offsetLeft;
+        scrollLeft = scroller.scrollLeft;
+    });
+
+    scroller.addEventListener('mouseleave', () => {
+        isDown = false;
+        scroller.classList.remove('active');
+    });
+
+    scroller.addEventListener('mouseup', () => {
+        isDown = false;
+        scroller.classList.remove('active');
+    });
+
+    scroller.addEventListener('mousemove', (e) => {
+        if (!isDown) return; // Stop if mouse button is not held down
+        e.preventDefault();
+        const x = e.pageX - scroller.offsetLeft;
+        const walk = (x - startX) * 2; // The '* 2' makes the drag feel faster
+        scroller.scrollLeft = scrollLeft - walk;
     });
 }
 
