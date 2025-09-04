@@ -2024,95 +2024,225 @@ html[data-color-scheme="dark"] {
   }
 }
 
-.experience-card {
-    display: flex;
-    flex-direction: column;
+/* --- Final Experience Section: Interactive Timeline --- */
+
+.vertical-timeline-container {
+    position: relative;
+    max-width: 900px;
+    margin: 60px auto 0;
 }
+
+.vertical-timeline-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%) scaleY(var(--timeline-progress, 0));
+    transform-origin: top;
+    height: 100%;
+    width: 2px;
+    background: rgba(0, 212, 255, 0.2);
+    transition: transform 0.1s linear;
+}
+
+.timeline-entry {
+    position: absolute;
+    width: calc(50% - 30px);
+}
+
+/* --- Positioning for LEFT and RIGHT entries --- */
+.timeline-entry--left {
+    left: 0;
+}
+
+/* CORRECTED/RESTORED: This crucial rule positions the right-side panels correctly */
+.timeline-entry--right {
+    right: 0;
+}
+
+/* --- The Pip Element Styling --- */
+.timeline-pip {
+    position: absolute;
+    top: 24px;
+    width: 10px;
+    height: 10px;
+    background: rgba(0, 212, 255, 0.4);
+    border-radius: 50%;
+    transition: all 0.4s ease;
+    z-index: 2;
+    cursor: pointer;
+}
+
+/* Correctly positions the pip for LEFT panels */
+.timeline-entry--left .timeline-pip {
+    right: -35px;
+}
+
+/* Correctly positions the pip for RIGHT panels */
+.timeline-entry--right .timeline-pip {
+    left: -35px;
+}
+
+/* --- Card Styling and Animations --- */
+.timeline-entry .experience-card {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-32);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: all 0.6s ease;
+    transform: translateY(20px);
+}
+
+.timeline-entry.is-visible .experience-card {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+/* --- Active State Highlighting --- */
+.timeline-entry.is-active .timeline-pip {
+    background: var(--color-electric-blue);
+    transform: scale(1.5);
+    box-shadow: 0 0 15px var(--color-electric-blue);
+}
+
+.timeline-entry.is-active .experience-card {
+    border-color: var(--color-electric-blue);
+}
+
+/* --- Mobile Fallback --- */
+@media (max-width: 768px) {
+    .vertical-timeline-container { height: auto !important; }
+    .vertical-timeline-container::before { left: 8px; transform: translateX(0) scaleY(var(--timeline-progress, 0)); }
+    .timeline-entry, 
+    .timeline-entry--left, 
+    .timeline-entry--right { 
+        position: static !important; 
+        top: auto !important; 
+        left: auto !important; 
+        right: auto !important; /* CORRECTED: Ensures right-alignment is reset on mobile */
+        width: 100%; 
+        margin-left: 40px; 
+        margin-bottom: 40px; 
+    }
+    .timeline-entry .timeline-pip { 
+        left: -37px !important; 
+        right: auto !important; 
+    }
+}
+
+/* --- Experience Card Content & Interactive List Styling --- */
+
 .experience-period {
-    font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
-    color: var(--color-accent-teal); margin-bottom: var(--space-16);
-    letter-spacing: 1px; text-transform: uppercase;
+    font-size: var(--font-size-sm); 
+    font-weight: var(--font-weight-medium);
+    color: var(--color-accent-teal); 
+    margin-bottom: var(--space-16);
+    letter-spacing: 1px; 
+    text-transform: uppercase;
 }
+
 .experience-title {
-    font-size: var(--font-size-xl); color: var(--color-electric-blue);
+    font-size: var(--font-size-xl); 
+    color: var(--color-electric-blue);
     margin-bottom: var(--space-8);
 }
+
 .experience-company {
-    font-size: var(--font-size-md); color: var(--color-text-secondary);
+    font-size: var(--font-size-md); 
+    color: var(--color-text-secondary);
     margin-bottom: var(--space-20);
 }
+
 .experience-details ul {
-    list-style: none; padding-left: var(--space-20);
+    list-style: none;
+    padding-left: 0;
     margin: 0 0 var(--space-24) 0;
 }
+
 .experience-details ul li {
-    position: relative; padding-bottom: var(--space-8);
-    color: var(--color-text-secondary); line-height: 1.6;
+    position: relative;
+    padding-left: 20px;
+    padding-bottom: var(--space-12);
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+    transition: color 0.3s ease;
+    padding-top: 4px; /* ADDED: A tiny bit of top padding for better visual balance */
 }
+
 .experience-details ul li::before {
-    content: '■'; position: absolute; left: -20px; top: 6px;
-    color: var(--color-electric-blue); font-size: 0.8em;
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 4px;                             /* MODIFIED: Matches the new padding-top */
+    bottom: var(--space-12);              /* MODIFIED: This is the key fix. The line now stops where the bottom padding begins. */
+    width: 2px;
+    /* height: 100%; */                   /* REMOVED: We no longer use a fixed or percentage height. */
+    background: var(--color-electric-blue);
+    opacity: 0.5;
+    border-radius: 2px;
+    transition: all 0.3s ease;
 }
+
+.experience-details ul li:hover {
+    color: var(--color-text);
+}
+
+.experience-details ul li:hover::before {
+    opacity: 1;
+    box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
+}
+
 .experience-achievements {
-    border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: var(--space-16);
-    margin-top: var(--space-16); display: flex; flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); 
+    padding-top: var(--space-16);
+    margin-top: var(--space-16); 
+    display: flex; 
+    flex-direction: column;
     gap: var(--space-12);
 }
+
 .achievement-item {
-    display: flex; align-items: center; gap: var(--space-12);
-    font-size: var(--font-size-sm); color: var(--color-text);
-}
-.achievement-icon { font-size: 1.2em; flex-shrink: 0; }
-
-/* --- 2. Mobile-First Layout (Default) --- */
-.experience-inspector-layout { display: none; }
-.experience-scroller {
-    display: block; overflow-x: scroll; cursor: grab;
-    scrollbar-width: none; -ms-overflow-style: none;
-}
-.experience-scroller::-webkit-scrollbar { display: none; }
-.experience-scroller.active { 
-  cursor: grabbing;
-  user-select: none;
-  -webkit-user-select: none; /* For Safari/Chrome */
-  -moz-user-select: none; /* For Firefox */
-  -ms-user-select: none; /* For IE/Edge */
-}
-.experience-scroller .experience-track {
-    display: inline-flex; gap: var(--space-32); padding: 0 var(--space-32);
-}
-.experience-scroller .experience-card {
-    flex-shrink: 0; width: 80vw; max-width: 450px;
-    background: rgba(255, 255, 255, 0.05); padding: var(--space-32);
-    border-radius: var(--radius-lg); border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex; 
+    align-items: center; 
+    gap: var(--space-12);
+    font-size: var(--font-size-sm); 
+    color: var(--color-text);
 }
 
-/* --- 3. Wide Screen Layout --- */
-@media (min-width: 1024px) {
-    .experience-scroller { display: none; }
-    .experience-inspector-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; max-width: 1400px; margin: 60px auto; padding: 0 20px; }
-    .constellation-map-container { position: relative; height: 600px; }
-    .constellation-lines, .constellation-nodes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-    .constellation-lines { overflow: visible; }
-    .constellation-lines .line { stroke: var(--color-electric-blue); stroke-width: 2; opacity: 0.3; transition: opacity 0.4s ease; }
-    .experience-inspector-layout.inspector-active .constellation-lines .line { opacity: 0.1; }
-    .constellation-node-plaque { position: absolute; transform: translate(-50%, -50%); width: 220px; padding: var(--space-12); background: rgba(38, 40, 40, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-base); cursor: pointer; transition: all var(--animation-speed) var(--animation-curve); }
-    .plaque-title { font-size: 0.9em; font-weight: bold; color: var(--color-text); margin-bottom: 4px; }
-    .plaque-company { font-size: 0.8em; color: var(--color-accent-teal); margin-bottom: 8px; }
-    .plaque-highlight { font-size: 0.8em; color: var(--color-text-secondary); line-height: 1.4; }
-    .plaque-highlight b { color: var(--color-text); }
-    .constellation-node-plaque:hover { transform: translate(-50%, -50%) scale(1.05); border-color: var(--color-electric-blue); box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
-    .constellation-node-plaque.active { border-color: var(--color-electric-blue); box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); }
-    .experience-inspector-layout.inspector-active .constellation-node-plaque:not(.active) { opacity: 0.4; filter: grayscale(80%); }
-    .inspector-panel { position: sticky; top: 100px; align-self: start; max-height: calc(100vh - 120px); background: rgba(26, 26, 46, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-lg); display: flex; flex-direction: column; transition: all var(--animation-speed) var(--animation-curve); }
-    .inspector-panel-content { padding: var(--space-24); overflow-y: auto; }
-    .inspector-close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; color: var(--color-text-secondary); cursor: pointer; transition: color 0.2s ease; opacity: 0; pointer-events: none; }
-    .inspector-close-btn:hover { color: var(--color-electric-blue); }
-    .inspector-panel.active { border-color: var(--color-electric-blue); }
-    .inspector-panel.active .inspector-close-btn { opacity: 1; pointer-events: all; }
-    .inspector-prompt { text-align: center; padding: 40px 20px; color: var(--color-text-secondary); }
-    .prompt-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
-    .inspector-panel .experience-card { border: none; background: none; padding: 0; }
+.achievement-icon { 
+    font-size: 1.2em; 
+    flex-shrink: 0; 
+}
+
+/* --- CRUCIAL: Responsive styles to collapse to a single column on mobile --- */
+
+@media (max-width: 768px) {
+    /* Move the timeline line back to the left */
+    .vertical-timeline-container::before {
+        left: 8px;
+        transform: translateX(0) scaleY(var(--timeline-progress, 0));
+    }
+
+    /* Make all entries full-width and left-aligned */
+    .timeline-entry,
+    .timeline-entry--left,
+    .timeline-entry--right {
+        width: 100%;
+        float: none;
+        padding: 0;
+        margin-left: 40px; /* Space for the timeline line */
+        text-align: left;
+    }
+
+    /* Reposition the pips for the single-column layout */
+    .timeline-entry::before,
+    .timeline-entry--left::before,
+    .timeline-entry--right::before {
+        left: -37px;
+        right: auto;
+    }
 }
 
 .skill-pane-container {

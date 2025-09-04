@@ -20,6 +20,23 @@ const config = {
         noiseSpeed: 0.003,
         noiseAmount: 0.15,
         mouseFollowSpeed: 0.08
+    },
+    // --- NEW: Centralized config for the interactive timeline ---
+    timeline: {
+        layout: {
+            topPadding: 40,      // Initial space from the top of the section
+            verticalMargin: 40   // The vertical gap between panes in the SAME column
+        },
+        scroll: {
+            navbarOffset: 80     // The space to leave for the sticky navbar when scrolling
+        },
+        animation: {
+            fadeInThreshold: 0.1, // How much of the card must be visible to trigger the fade-in (0.0 to 1.0)
+            highlightRootMargin: "-40% 0px -55% 0px" // Defines the "activation zone" for highlighting. Top, Right, Bottom, Left.
+        },
+        performance: {
+            throttleLimit: 10 // The delay in ms for the scroll-based line animation
+        }
     }
 };
 
@@ -42,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeExpandableHighlights();
     cacheSectionPositions();
     initializeParallaxEffect();
-    initializeExperienceInspector();
+    initializeInteractiveTimeline();
 });
 
 
@@ -853,101 +870,117 @@ function initializeHorizontalScroller() {
     });
 }
 
-function initializeExperienceInspector() {
-    const layoutContainer = document.getElementById('inspector-layout');
-    const nodesContainer = document.getElementById('constellation-nodes');
-    const linesContainer = document.getElementById('constellation-lines');
-    const panel = document.getElementById('inspector-panel');
-    const panelContent = document.getElementById('inspector-panel-content');
-    const panelCloseBtn = document.getElementById('inspector-close-btn');
-    const scrollerContainer = document.getElementById('experience-scroller-container');
+function initializeInteractiveTimeline() {
+    const timelineContainer = document.getElementById('vertical-timeline');
+    if (!timelineContainer) return;
 
-    if (!layoutContainer || typeof siteContent === 'undefined') return;
-    
     const sortedExperience = [...siteContent.experience].sort((a, b) => new Date(a.period.split(' - ')[0]) - new Date(b.period.split(' - ')[0]));
 
-    // --- Build the Desktop Map ---
-    sortedExperience.forEach((job, i) => {
-        nodesContainer.insertAdjacentHTML('beforeend', `<div class="constellation-node-plaque" data-job-id="${job.id}" style="left: ${job.coords.x}%; top: ${job.coords.y}%;"><div class="plaque-title">${job.title.split(' | ')[0]}</div><div class="plaque-company">${job.company}</div><div class="plaque-highlight">${job.achievements[0].icon} ${job.achievements[0].text}</div></div>`);
-        if (i < sortedExperience.length - 1) {
-            const p1 = job, p2 = sortedExperience[i + 1];
-            linesContainer.insertAdjacentHTML('beforeend', `<line class="line" x1="${p1.coords.x}%" y1="${p1.coords.y}%" x2="${p2.coords.x}%" y2="${p2.coords.y}%" />`);
-        }
-    });
-
-    // --- Build the Mobile Scroller ---
-    const mobileCardsHTML = [...sortedExperience].reverse().map(job => `
-        <div class="experience-card">
-            <div class="experience-period">${job.period}</div>
-            <h3 class="experience-title">${job.title}</h3>
-            <div class="experience-company">${job.company} &middot; ${job.location}</div>
-            <div class="experience-details">
-                <ul>${job.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
-                <div class="experience-achievements">
-                    ${job.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
+    // 1. Generate the HTML (Unchanged)
+    const timelineHTML = sortedExperience.map((job, index) => {
+        const alignmentClass = (index % 2 === 0) ? 'timeline-entry--left' : 'timeline-entry--right';
+        return `
+            <div class="timeline-entry ${alignmentClass}">
+                <div class="timeline-pip"></div> 
+                <div class="experience-card">
+                    <div class="experience-period">${job.period}</div>
+                    <h3 class="experience-title">${job.title}</h3>
+                    <div class="experience-company">${job.company} &middot; ${job.location}</div>
+                    <div class="experience-details">
+                        <ul>${job.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
+                        <div class="experience-achievements">
+                            ${job.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
-    `).join('');
-    scrollerContainer.innerHTML = `<div class="experience-track">${mobileCardsHTML}</div>`;
+        `;
+    }).join('');
+    timelineContainer.innerHTML = timelineHTML;
 
-    // --- Desktop Interaction Logic ---
-    const allPlaques = document.querySelectorAll('.constellation-node-plaque');
-    function closeInspector() {
-        panel.classList.remove('active');
-        layoutContainer.classList.remove('inspector-active');
-        document.querySelector('.constellation-node-plaque.active')?.classList.remove('active');
-        panelContent.innerHTML = `<div class="inspector-prompt"><span class="prompt-icon">👆</span><h3>Select a Node</h3><p>Click on a role in the map to inspect the full details.</p></div>`;
-    }
-    allPlaques.forEach(plaque => {
-        plaque.addEventListener('click', () => {
-            const jobId = plaque.dataset.jobId;
-            const jobData = siteContent.experience.find(j => j.id === jobId);
-            document.querySelector('.constellation-node-plaque.active')?.classList.remove('active');
-            plaque.classList.add('active');
-            layoutContainer.classList.add('inspector-active');
-            panel.classList.add('active');
-            panelContent.innerHTML = `<div class="experience-card"><div class="experience-period">${jobData.period}</div><h3 class="experience-title">${jobData.title}</h3><div class="experience-company">${jobData.company} &middot; ${jobData.location}</div><div class="experience-details"><ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul><div class="experience-achievements">${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}</div></div></div>`;
+    // --- 2. The Staggered Layout Logic ---
+    // REFACTORED: All layout values are now pulled from the config object
+    const allEntries = timelineContainer.querySelectorAll('.timeline-entry');
+    let leftColumnBottom = 0, rightColumnBottom = 0;
+    const topPadding = config.timeline.layout.topPadding;
+    const verticalMargin = config.timeline.layout.verticalMargin;
+    let lastLeftCardHeight = 0;
+
+    allEntries.forEach((entry, index) => {
+        const entryHeight = entry.offsetHeight;
+        if (entry.classList.contains('timeline-entry--left')) {
+            if (index === 0) {
+                entry.style.top = `${topPadding}px`;
+                leftColumnBottom = topPadding + entryHeight + verticalMargin;
+            } else {
+                entry.style.top = `${leftColumnBottom}px`;
+                leftColumnBottom += entryHeight + verticalMargin;
+            }
+            lastLeftCardHeight = entryHeight;
+        } else {
+            if (index === 1) {
+                const staggerOffset = topPadding + (lastLeftCardHeight / 2);
+                entry.style.top = `${staggerOffset}px`;
+                rightColumnBottom = staggerOffset + entryHeight + verticalMargin;
+            } else {
+                entry.style.top = `${rightColumnBottom}px`;
+                rightColumnBottom += entryHeight + verticalMargin;
+            }
+        }
+    });
+    timelineContainer.style.height = `${Math.max(leftColumnBottom, rightColumnBottom) - verticalMargin}px`;
+
+    // --- 3. Click-to-Scroll Functionality ---
+    // REFACTORED: Navbar offset is pulled from the config
+    const allPips = timelineContainer.querySelectorAll('.timeline-pip');
+    const navbarOffset = config.timeline.scroll.navbarOffset;
+
+    allPips.forEach((pip, index) => {
+        pip.addEventListener('click', () => {
+            const targetEntry = allEntries[index];
+            allEntries.forEach(e => e.classList.remove('is-active'));
+            targetEntry.classList.add('is-active');
+            const targetPosition = targetEntry.getBoundingClientRect().top + window.scrollY - navbarOffset;
+            window.scrollTo({ top: targetPosition, behavior: 'smooth' });
         });
     });
-    panelCloseBtn.addEventListener('click', closeInspector);
-    
-    // =========================================================
-    // --- Fixed: Mobile Scroller Interactions ---
-    // =========================================================
-    // 1. Mouse Wheel Scrolling with Vertical Fallback (Scroll Chaining)
-    scrollerContainer.addEventListener('wheel', (evt) => {
-        // If the user is scrolling up/down with the wheel, evt.deltaY will be non-zero.
-        if (evt.deltaY === 0) return;
 
-        // Check if the scroller is at the very beginning or very end.
-        // We use Math.ceil on the right edge to prevent floating-point rounding errors.
-        const atLeftEdge = scrollerContainer.scrollLeft === 0;
-        const atRightEdge = Math.ceil(scrollerContainer.scrollLeft) >= scrollerContainer.scrollWidth - scrollerContainer.clientWidth;
+    // --- 4. Intersection Observers for Animation & Highlighting ---
+    // REFACTORED: Observer options are pulled from the config
+    const fadeInObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                fadeInObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: config.timeline.animation.fadeInThreshold });
 
-        const scrollingRight = evt.deltaY > 0;
-        const scrollingLeft = evt.deltaY < 0;
-
-        // --- The Core Logic ---
-        // If we are trying to scroll left BUT we're already at the beginning,
-        // OR if we are trying to scroll right BUT we're already at the end...
-        // ...then do NOTHING. Let the event bubble up and scroll the page vertically.
-        if ((scrollingLeft && atLeftEdge) || (scrollingRight && atRightEdge)) {
-            return; // Allow vertical page scroll
+    const highlightObserver = new IntersectionObserver((entries) => {
+        const intersectingEntry = entries.find(entry => entry.isIntersecting);
+        allEntries.forEach(e => e.classList.remove('is-active'));
+        if (intersectingEntry) {
+            intersectingEntry.target.classList.add('is-active');
         }
+    }, { rootMargin: config.timeline.animation.highlightRootMargin });
 
-        // Otherwise, we have room to scroll horizontally.
-        // So, we prevent the default vertical scroll and apply the horizontal scroll.
-        evt.preventDefault();
-        scrollerContainer.scrollLeft += evt.deltaY;
+    allEntries.forEach(entry => {
+        fadeInObserver.observe(entry);
+        highlightObserver.observe(entry);
     });
 
-    // 2. Drag to Scroll
-    let isDown = false, startX, scrollLeft;
-    scrollerContainer.addEventListener('mousedown', e => { isDown = true; scrollerContainer.classList.add('active'); startX = e.pageX - scrollerContainer.offsetLeft; scrollLeft = scrollerContainer.scrollLeft; });
-    scrollerContainer.addEventListener('mouseleave', () => { isDown = false; scrollerContainer.classList.remove('active'); });
-    scrollerContainer.addEventListener('mouseup', () => { isDown = false; scrollerContainer.classList.remove('active'); });
-    scrollerContainer.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); const walk = (e.pageX - scrollerContainer.offsetLeft - startX) * 2; scrollerContainer.scrollLeft = scrollLeft - walk; });
+    // 5. Line Animation
+    // REFACTORED: Throttle limit is pulled from the config
+    function updateLineAnimation() {
+        const containerRect = timelineContainer.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const visibleHeight = Math.max(0, Math.min(containerRect.height, viewportHeight - containerRect.top));
+        const progress = visibleHeight / containerRect.height;
+        timelineContainer.style.setProperty('--timeline-progress', Math.min(progress, 1));
+    }
+    const throttledLineUpdate = throttle(updateLineAnimation, config.timeline.performance.throttleLimit);
+    window.addEventListener('scroll', throttledLineUpdate);
+    updateLineAnimation();
 }
 
 // Add preload for better performance
