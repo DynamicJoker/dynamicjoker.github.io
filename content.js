@@ -87,19 +87,29 @@ const siteContent = {
 
   // Skills data
   skills: [
-      {
-          category: 'Technical Marketing',
-          tags: ['Technical Writing', 'White Paper Creation', 'API Documentation', 'Product Marketing', 'Technical SEO', 'Marketing Automation']
-      },
-      {
-          category: 'B2B Marketing',
-          tags: ['Demand Generation', 'Account-Based Marketing', 'Lead Nurturing', 'Sales Enablement', 'B2B Content Strategy', 'Marketing Qualified Leads']
-      },
-      {
-          category: 'B2C Marketing',
-          tags: ['Consumer Behavior Analysis', 'Brand Storytelling', 'Social Media Marketing', 'Customer Journey Mapping', 'Conversion Optimization', 'Performance Marketing']
-      }
-  ],
+    {
+        category: 'Technical Marketing',
+        tags: ['Technical Writing', 'White Paper Creation', 'API Documentation', 'Product Marketing', 'Technical SEO', 'Marketing Automation']
+    },
+    {
+        category: 'B2B Marketing',
+        tags: ['Demand Generation', 'Account-Based Marketing', 'Lead Nurturing', 'Sales Enablement', 'B2B Content Strategy', 'Marketing Qualified Leads']
+    },
+    {
+        category: 'B2C Marketing',
+        tags: ['Consumer Behavior Analysis', 'Brand Storytelling', 'Social Media Marketing', 'Customer Journey Mapping', 'Conversion Optimization', 'Performance Marketing']
+    },
+    // MODIFIED THIS OBJECT
+    {
+        category: 'Tools & Platforms',
+        type: 'pane', // Using 'pane' to identify this new layout
+        tags: [ // Now a single array of tags
+            'HubSpot', 'Salesforce', 'Google Analytics', 'Marketo',
+            'Pardot', 'Mailchimp', 'Hootsuite', 'Figma',
+            'WordPress', 'Webflow'
+        ]
+    }
+],
   
   // Services data
   services: [

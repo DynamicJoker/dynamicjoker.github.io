@@ -2071,7 +2071,13 @@ html[data-color-scheme="dark"] {
     scrollbar-width: none; -ms-overflow-style: none;
 }
 .experience-scroller::-webkit-scrollbar { display: none; }
-.experience-scroller.active { cursor: grabbing; }
+.experience-scroller.active { 
+  cursor: grabbing;
+  user-select: none;
+  -webkit-user-select: none; /* For Safari/Chrome */
+  -moz-user-select: none; /* For Firefox */
+  -ms-user-select: none; /* For IE/Edge */
+}
 .experience-scroller .experience-track {
     display: inline-flex; gap: var(--space-32); padding: 0 var(--space-32);
 }
@@ -2109,6 +2115,46 @@ html[data-color-scheme="dark"] {
     .inspector-panel .experience-card { border: none; background: none; padding: 0; }
 }
 
+.skill-pane-container {
+  /* Set the maximum height. Adjust this value as needed to match other cards. */
+  max-height: 250px; 
+  
+  /* Enable vertical scrolling ONLY if the content inside is taller than max-height */
+  overflow-y: auto; 
+  
+  /* Add some padding on the right to prevent text from touching the scrollbar */
+  padding-right: 10px; 
+
+  /* A subtle visual hint that the area is scrollable */
+  -webkit-mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 90%, transparent 100%);
+}
+
+/* --- Custom Scrollbar Styling (for Webkit browsers like Chrome, Safari) --- */
+
+/* The scrollbar track (the background) */
+.skill-pane-container::-webkit-scrollbar {
+  width: 5px; /* CHANGED: Made the scrollbar slightly thinner */
+}
+
+/* The scrollbar track itself */
+.skill-pane-container::-webkit-scrollbar-track {
+  background: transparent; /* CHANGED: Made the track completely invisible */
+}
+
+/* The draggable scrolling handle */
+.skill-pane-container::-webkit-scrollbar-thumb {
+  /* CHANGED: Used a more subtle, semi-transparent grey for the default state */
+  background: rgba(98, 108, 113, 0.4); 
+  border-radius: 10px;
+  transition: background 0.2s ease-in-out; /* Added a smooth transition */
+}
+
+/* The handle becomes more prominent on hover */
+.skill-pane-container::-webkit-scrollbar-thumb:hover {
+  /* CHANGED: The brighter color now only appears on hover for better feedback */
+  background: rgba(98, 108, 113, 0.7);
+}
 
 /* Critical (Don't Change): Specific fix for skill tags which also had a scale transform */
 .section.visible .skill-tag {

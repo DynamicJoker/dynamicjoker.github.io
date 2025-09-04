@@ -689,14 +689,34 @@ function generateSkills() {
     const skillsGrid = document.getElementById('skills-grid');
     if (!skillsGrid) return;
 
-    const skillsHTML = siteContent.skills.map(category => `
-        <div class="skill-category">
-            <h3 class="skill-category-title">${category.category}</h3>
-            <div class="skill-tags">
-                ${category.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
+    const skillsHTML = siteContent.skills.map(category => {
+        let contentHTML;
+
+        // NEW: Check for our 'pane' type
+        if (category.type === 'pane') {
+            const paneTagsHTML = category.tags.map(tag => 
+                `<span class="skill-tag">${tag}</span>` // Uses the SAME class as the default
+            ).join('');
+            // Wrap the tags in the new scrollable container
+            contentHTML = `<div class="skill-pane-container"><div class="skill-tags">${paneTagsHTML}</div></div>`;
+
+        } else {
+            // This is the original logic for the other three lists. It remains unchanged.
+            const tagsHTML = category.tags.map(tag => 
+                `<span class="skill-tag">${tag}</span>`
+            ).join('');
+            contentHTML = `<div class="skill-tags">${tagsHTML}</div>`;
+        }
+
+        // Return the full HTML for the category card
+        return `
+            <div class="skill-category">
+                <h3 class="skill-category-title">${category.category}</h3>
+                ${contentHTML}
             </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
+
     skillsGrid.innerHTML = skillsHTML;
 }
 
@@ -895,8 +915,29 @@ function initializeExperienceInspector() {
     // =========================================================
     // --- Fixed: Mobile Scroller Interactions ---
     // =========================================================
-    // 1. Mouse Wheel Scrolling
+    // 1. Mouse Wheel Scrolling with Vertical Fallback (Scroll Chaining)
     scrollerContainer.addEventListener('wheel', (evt) => {
+        // If the user is scrolling up/down with the wheel, evt.deltaY will be non-zero.
+        if (evt.deltaY === 0) return;
+
+        // Check if the scroller is at the very beginning or very end.
+        // We use Math.ceil on the right edge to prevent floating-point rounding errors.
+        const atLeftEdge = scrollerContainer.scrollLeft === 0;
+        const atRightEdge = Math.ceil(scrollerContainer.scrollLeft) >= scrollerContainer.scrollWidth - scrollerContainer.clientWidth;
+
+        const scrollingRight = evt.deltaY > 0;
+        const scrollingLeft = evt.deltaY < 0;
+
+        // --- The Core Logic ---
+        // If we are trying to scroll left BUT we're already at the beginning,
+        // OR if we are trying to scroll right BUT we're already at the end...
+        // ...then do NOTHING. Let the event bubble up and scroll the page vertically.
+        if ((scrollingLeft && atLeftEdge) || (scrollingRight && atRightEdge)) {
+            return; // Allow vertical page scroll
+        }
+
+        // Otherwise, we have room to scroll horizontally.
+        // So, we prevent the default vertical scroll and apply the horizontal scroll.
         evt.preventDefault();
         scrollerContainer.scrollLeft += evt.deltaY;
     });
