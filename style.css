@@ -2024,226 +2024,7 @@ html[data-color-scheme="dark"] {
   }
 }
 
-/* --- Final Experience Section: Interactive Timeline --- */
 
-.vertical-timeline-container {
-    position: relative;
-    max-width: 900px;
-    margin: 60px auto 0;
-}
-
-.vertical-timeline-container::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%) scaleY(var(--timeline-progress, 0));
-    transform-origin: top;
-    height: 100%;
-    width: 2px;
-    background: rgba(0, 212, 255, 0.2);
-    transition: transform 0.1s linear;
-}
-
-.timeline-entry {
-    position: absolute;
-    width: calc(50% - 30px);
-}
-
-/* --- Positioning for LEFT and RIGHT entries --- */
-.timeline-entry--left {
-    left: 0;
-}
-
-/* CORRECTED/RESTORED: This crucial rule positions the right-side panels correctly */
-.timeline-entry--right {
-    right: 0;
-}
-
-/* --- The Pip Element Styling --- */
-.timeline-pip {
-    position: absolute;
-    top: 24px;
-    width: 10px;
-    height: 10px;
-    background: rgba(0, 212, 255, 0.4);
-    border-radius: 50%;
-    transition: all 0.4s ease;
-    z-index: 2;
-    cursor: pointer;
-}
-
-/* Correctly positions the pip for LEFT panels */
-.timeline-entry--left .timeline-pip {
-    right: -35px;
-}
-
-/* Correctly positions the pip for RIGHT panels */
-.timeline-entry--right .timeline-pip {
-    left: -35px;
-}
-
-/* --- Card Styling and Animations --- */
-.timeline-entry .experience-card {
-    background: rgba(255, 255, 255, 0.05);
-    padding: var(--space-32);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-    opacity: 0;
-    transition: all 0.6s ease;
-    transform: translateY(20px);
-}
-
-.timeline-entry.is-visible .experience-card {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-/* --- Active State Highlighting --- */
-.timeline-entry.is-active .timeline-pip {
-    background: var(--color-electric-blue);
-    transform: scale(1.5);
-    box-shadow: 0 0 15px var(--color-electric-blue);
-}
-
-.timeline-entry.is-active .experience-card {
-    border-color: var(--color-electric-blue);
-}
-
-/* --- Mobile Fallback --- */
-@media (max-width: 768px) {
-    .vertical-timeline-container { height: auto !important; }
-    .vertical-timeline-container::before { left: 8px; transform: translateX(0) scaleY(var(--timeline-progress, 0)); }
-    .timeline-entry, 
-    .timeline-entry--left, 
-    .timeline-entry--right { 
-        position: static !important; 
-        top: auto !important; 
-        left: auto !important; 
-        right: auto !important; /* CORRECTED: Ensures right-alignment is reset on mobile */
-        width: 100%; 
-        margin-left: 40px; 
-        margin-bottom: 40px; 
-    }
-    .timeline-entry .timeline-pip { 
-        left: -37px !important; 
-        right: auto !important; 
-    }
-}
-
-/* --- Experience Card Content & Interactive List Styling --- */
-
-.experience-period {
-    font-size: var(--font-size-sm); 
-    font-weight: var(--font-weight-medium);
-    color: var(--color-accent-teal); 
-    margin-bottom: var(--space-16);
-    letter-spacing: 1px; 
-    text-transform: uppercase;
-}
-
-.experience-title {
-    font-size: var(--font-size-xl); 
-    color: var(--color-electric-blue);
-    margin-bottom: var(--space-8);
-}
-
-.experience-company {
-    font-size: var(--font-size-md); 
-    color: var(--color-text-secondary);
-    margin-bottom: var(--space-20);
-}
-
-.experience-details ul {
-    list-style: none;
-    padding-left: 0;
-    margin: 0 0 var(--space-24) 0;
-}
-
-.experience-details ul li {
-    position: relative;
-    padding-left: 20px;
-    padding-bottom: var(--space-12);
-    color: var(--color-text-secondary);
-    line-height: 1.6;
-    transition: color 0.3s ease;
-    padding-top: 4px; /* ADDED: A tiny bit of top padding for better visual balance */
-}
-
-.experience-details ul li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 4px;                             /* MODIFIED: Matches the new padding-top */
-    bottom: var(--space-12);              /* MODIFIED: This is the key fix. The line now stops where the bottom padding begins. */
-    width: 2px;
-    /* height: 100%; */                   /* REMOVED: We no longer use a fixed or percentage height. */
-    background: var(--color-electric-blue);
-    opacity: 0.5;
-    border-radius: 2px;
-    transition: all 0.3s ease;
-}
-
-.experience-details ul li:hover {
-    color: var(--color-text);
-}
-
-.experience-details ul li:hover::before {
-    opacity: 1;
-    box-shadow: 0 0 8px rgba(0, 212, 255, 0.5);
-}
-
-.experience-achievements {
-    border-top: 1px solid rgba(255, 255, 255, 0.1); 
-    padding-top: var(--space-16);
-    margin-top: var(--space-16); 
-    display: flex; 
-    flex-direction: column;
-    gap: var(--space-12);
-}
-
-.achievement-item {
-    display: flex; 
-    align-items: center; 
-    gap: var(--space-12);
-    font-size: var(--font-size-sm); 
-    color: var(--color-text);
-}
-
-.achievement-icon { 
-    font-size: 1.2em; 
-    flex-shrink: 0; 
-}
-
-/* --- CRUCIAL: Responsive styles to collapse to a single column on mobile --- */
-
-@media (max-width: 768px) {
-    /* Move the timeline line back to the left */
-    .vertical-timeline-container::before {
-        left: 8px;
-        transform: translateX(0) scaleY(var(--timeline-progress, 0));
-    }
-
-    /* Make all entries full-width and left-aligned */
-    .timeline-entry,
-    .timeline-entry--left,
-    .timeline-entry--right {
-        width: 100%;
-        float: none;
-        padding: 0;
-        margin-left: 40px; /* Space for the timeline line */
-        text-align: left;
-    }
-
-    /* Reposition the pips for the single-column layout */
-    .timeline-entry::before,
-    .timeline-entry--left::before,
-    .timeline-entry--right::before {
-        left: -37px;
-        right: auto;
-    }
-}
 
 .skill-pane-container {
   /* Set the maximum height. Adjust this value as needed to match other cards. */
@@ -2289,6 +2070,222 @@ html[data-color-scheme="dark"] {
 /* Critical (Don't Change): Specific fix for skill tags which also had a scale transform */
 .section.visible .skill-tag {
     transform: translateY(0) scale(1);
+}
+
+/* --- New: Click-to-Expand Experience Grid --- */
+
+.experience-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-24);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+/* This class fades out the grid when a card is open */
+.experience-grid.is-faded .experience-tile {
+    opacity: 0;
+    transform: scale(0.9);
+}
+
+.experience-tile {
+    background: rgba(255, 255, 255, 0.05);
+    padding: var(--space-24);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, opacity 0.5s ease;
+}
+
+.experience-tile:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-electric-blue);
+}
+
+.tile-period {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-16);
+}
+
+.tile-title {
+    font-size: var(--font-size-xl);
+    color: var(--color-text);
+    margin-bottom: var(--space-8);
+}
+
+.tile-company {
+    font-size: var(--font-size-base);
+    color: var(--color-accent-teal);
+    font-weight: 500;
+    margin-bottom: var(--space-20);
+}
+
+.tile-cta {
+    font-weight: 500;
+    color: var(--color-electric-blue);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.experience-tile:hover .tile-cta {
+    opacity: 1;
+}
+
+/* --- The Expanded Card Viewer --- */
+.experience-viewer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    background: rgba(10, 10, 20, 0.5);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.4s ease;
+}
+
+.experience-viewer.is-visible {
+    pointer-events: auto;
+}
+
+.experience-viewer.is-active {
+    opacity: 1;
+}
+
+.experience-viewer__card {
+    width: 100%;
+    max-width: 750px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: var(--space-32);
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
+    transform-origin: top left; /* Crucial for the FLIP animation */
+}
+
+.experience-viewer__card.is-animating {
+    transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.experience-viewer__close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 2rem;
+    color: white;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    line-height: 0;
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.experience-viewer__close:hover {
+    transform: rotate(90deg);
+    background: rgba(255, 0, 0, 0.5);
+}
+
+/* --- Polished Card Content Styles (Consistently Formatted) --- */
+.experience-viewer__card .experience-header {
+    margin-bottom: var(--space-20);
+}
+
+.experience-viewer__card .experience-period {
+    font-size: var(--font-size-sm);
+    color: var(--color-accent-teal);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: var(--space-12);
+}
+
+.experience-viewer__card .experience-title {
+    font-size: var(--font-size-2xl);
+    color: var(--color-electric-blue);
+    margin-bottom: var(--space-8);
+}
+
+.experience-viewer__card .experience-company {
+    font-size: var(--font-size-lg);
+    color: var(--color-text-secondary);
+}
+
+.experience-viewer__card .experience-highlights {
+    padding: var(--space-20);
+    margin: var(--space-24) 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-base);
+}
+
+.experience-viewer__card .highlights-title {
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-16);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.experience-viewer__card .highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-16);
+}
+
+.experience-viewer__card .achievement-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-12);
+    font-weight: 500;
+}
+
+.experience-viewer__card .achievement-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
+}
+
+.experience-viewer__card .experience-details ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.experience-viewer__card .experience-details ul li {
+    position: relative;
+    padding-left: 20px;
+    margin-bottom: var(--space-12);
+    color: var(--color-text-secondary);
+}
+
+.experience-viewer__card .experience-details ul li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 5px;
+    width: 3px;
+    height: 14px;
+    background-color: var(--color-electric-blue);
+    border-radius: 2px;
+    opacity: 0.5;
 }
 
 /* Delays for Service Cards (150ms interval) */

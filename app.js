@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeExpandableHighlights();
     cacheSectionPositions();
     initializeParallaxEffect();
-    initializeInteractiveTimeline();
+    initializeExpandableGrid();
 });
 
 
@@ -870,117 +870,121 @@ function initializeHorizontalScroller() {
     });
 }
 
-function initializeInteractiveTimeline() {
-    const timelineContainer = document.getElementById('vertical-timeline');
-    if (!timelineContainer) return;
+function initializeExpandableGrid() {
+    const grid = document.getElementById('experience-grid');
+    const viewer = document.getElementById('experience-viewer');
+    const viewerCard = document.getElementById('experience-viewer-card');
+    const closeButton = document.getElementById('experience-viewer-close');
 
-    const sortedExperience = [...siteContent.experience].sort((a, b) => new Date(a.period.split(' - ')[0]) - new Date(b.period.split(' - ')[0]));
+    if (!grid || !viewer || !viewerCard || !closeButton) {
+        console.error('Expandable grid elements not found!');
+        return;
+    }
 
-    // 1. Generate the HTML (Unchanged)
-    const timelineHTML = sortedExperience.map((job, index) => {
-        const alignmentClass = (index % 2 === 0) ? 'timeline-entry--left' : 'timeline-entry--right';
-        return `
-            <div class="timeline-entry ${alignmentClass}">
-                <div class="timeline-pip"></div> 
-                <div class="experience-card">
-                    <div class="experience-period">${job.period}</div>
-                    <h3 class="experience-title">${job.title}</h3>
-                    <div class="experience-company">${job.company} &middot; ${job.location}</div>
-                    <div class="experience-details">
-                        <ul>${job.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
-                        <div class="experience-achievements">
-                            ${job.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
-                        </div>
-                    </div>
+    // --- 1. GENERATE SUMMARY TILES ---
+    const sortedExperience = [...siteContent.experience].sort((a, b) => {
+        const aDate = a.period.includes('Present') ? new Date() : new Date(a.period.split(' - ')[1]);
+        const bDate = b.period.includes('Present') ? new Date() : new Date(b.period.split(' - ')[1]);
+        return bDate - aDate; // Newest first
+    });
+
+    const gridHTML = sortedExperience.map(job => `
+        <div class="experience-tile" data-id="${job.id}">
+            <div class="tile-period">${job.period}</div>
+            <h3 class="tile-title">${job.title}</h3>
+            <div class="tile-company">${job.company}</div>
+            <div class="tile-cta">View Details &rarr;</div>
+        </div>
+    `).join('');
+    grid.innerHTML = gridHTML;
+
+    // --- 2. THE ANIMATION LOGIC ---
+    let lastClickedTile = null;
+
+    grid.addEventListener('click', (e) => {
+        const tile = e.target.closest('.experience-tile');
+        if (!tile) return;
+
+        lastClickedTile = tile; // Remember which tile was clicked
+        const jobId = tile.dataset.id;
+        const jobData = siteContent.experience.find(j => j.id === jobId);
+
+        // Populate the viewer with the full card content
+        const detailHTML = `
+            <div class="experience-header">
+                <div class="experience-period">${jobData.period}</div>
+                <h3 class="experience-title">${jobData.title}</h3>
+                <div class="experience-company">${jobData.company} &middot; ${jobData.location}</div>
+            </div>
+            <div class="experience-highlights">
+                <h4 class="highlights-title">Key Highlights</h4>
+                <div class="highlights-grid">
+                    ${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
                 </div>
             </div>
+            <div class="experience-details">
+                <ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
+            </div>
         `;
-    }).join('');
-    timelineContainer.innerHTML = timelineHTML;
+        viewerCard.innerHTML = detailHTML;
 
-    // --- 2. The Staggered Layout Logic ---
-    // REFACTORED: All layout values are now pulled from the config object
-    const allEntries = timelineContainer.querySelectorAll('.timeline-entry');
-    let leftColumnBottom = 0, rightColumnBottom = 0;
-    const topPadding = config.timeline.layout.topPadding;
-    const verticalMargin = config.timeline.layout.verticalMargin;
-    let lastLeftCardHeight = 0;
+        // --- FLIP ANIMATION (First, Last, Invert, Play) ---
+        // 1. First: Get the position of the clicked tile.
+        const startRect = tile.getBoundingClientRect();
+        
+        // Make viewer visible but fully transparent to calculate final position
+        viewer.classList.add('is-visible');
+        const endRect = viewerCard.getBoundingClientRect();
 
-    allEntries.forEach((entry, index) => {
-        const entryHeight = entry.offsetHeight;
-        if (entry.classList.contains('timeline-entry--left')) {
-            if (index === 0) {
-                entry.style.top = `${topPadding}px`;
-                leftColumnBottom = topPadding + entryHeight + verticalMargin;
-            } else {
-                entry.style.top = `${leftColumnBottom}px`;
-                leftColumnBottom += entryHeight + verticalMargin;
-            }
-            lastLeftCardHeight = entryHeight;
-        } else {
-            if (index === 1) {
-                const staggerOffset = topPadding + (lastLeftCardHeight / 2);
-                entry.style.top = `${staggerOffset}px`;
-                rightColumnBottom = staggerOffset + entryHeight + verticalMargin;
-            } else {
-                entry.style.top = `${rightColumnBottom}px`;
-                rightColumnBottom += entryHeight + verticalMargin;
-            }
-        }
-    });
-    timelineContainer.style.height = `${Math.max(leftColumnBottom, rightColumnBottom) - verticalMargin}px`;
+        // 2. Invert: Calculate the difference and apply as an initial transform.
+        const deltaX = startRect.left - endRect.left;
+        const deltaY = startRect.top - endRect.top;
+        const deltaW = startRect.width / endRect.width;
+        const deltaH = startRect.height / endRect.height;
 
-    // --- 3. Click-to-Scroll Functionality ---
-    // REFACTORED: Navbar offset is pulled from the config
-    const allPips = timelineContainer.querySelectorAll('.timeline-pip');
-    const navbarOffset = config.timeline.scroll.navbarOffset;
-
-    allPips.forEach((pip, index) => {
-        pip.addEventListener('click', () => {
-            const targetEntry = allEntries[index];
-            allEntries.forEach(e => e.classList.remove('is-active'));
-            targetEntry.classList.add('is-active');
-            const targetPosition = targetEntry.getBoundingClientRect().top + window.scrollY - navbarOffset;
-            window.scrollTo({ top: targetPosition, behavior: 'smooth' });
+        viewerCard.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${deltaW}, ${deltaH})`;
+        
+        // 3. Play: Force a reflow, then remove the transform to animate.
+        requestAnimationFrame(() => {
+            grid.classList.add('is-faded');
+            viewer.classList.add('is-active');
+            viewerCard.classList.add('is-animating');
+            viewerCard.style.transform = 'none';
         });
     });
 
-    // --- 4. Intersection Observers for Animation & Highlighting ---
-    // REFACTORED: Observer options are pulled from the config
-    const fadeInObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('is-visible');
-                fadeInObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: config.timeline.animation.fadeInThreshold });
+    function closeViewer() {
+        if (!lastClickedTile) return;
 
-    const highlightObserver = new IntersectionObserver((entries) => {
-        const intersectingEntry = entries.find(entry => entry.isIntersecting);
-        allEntries.forEach(e => e.classList.remove('is-active'));
-        if (intersectingEntry) {
-            intersectingEntry.target.classList.add('is-active');
-        }
-    }, { rootMargin: config.timeline.animation.highlightRootMargin });
+        // Animate back to the original tile's position
+        const startRect = lastClickedTile.getBoundingClientRect();
+        const endRect = viewerCard.getBoundingClientRect();
 
-    allEntries.forEach(entry => {
-        fadeInObserver.observe(entry);
-        highlightObserver.observe(entry);
-    });
+        const deltaX = startRect.left - endRect.left;
+        const deltaY = startRect.top - endRect.top;
+        const deltaW = startRect.width / endRect.width;
+        const deltaH = startRect.height / endRect.height;
+        
+        viewerCard.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${deltaW}, ${deltaH})`;
+        
+        grid.classList.remove('is-faded');
+        viewer.classList.remove('is-active');
 
-    // 5. Line Animation
-    // REFACTORED: Throttle limit is pulled from the config
-    function updateLineAnimation() {
-        const containerRect = timelineContainer.getBoundingClientRect();
-        const viewportHeight = window.innerHeight;
-        const visibleHeight = Math.max(0, Math.min(containerRect.height, viewportHeight - containerRect.top));
-        const progress = visibleHeight / containerRect.height;
-        timelineContainer.style.setProperty('--timeline-progress', Math.min(progress, 1));
+        // Wait for the animation to finish before hiding the viewer
+        viewerCard.addEventListener('transitionend', () => {
+            viewer.classList.remove('is-visible');
+            viewerCard.classList.remove('is-animating');
+            viewerCard.innerHTML = ''; // Clean up content
+        }, { once: true });
     }
-    const throttledLineUpdate = throttle(updateLineAnimation, config.timeline.performance.throttleLimit);
-    window.addEventListener('scroll', throttledLineUpdate);
-    updateLineAnimation();
+
+    closeButton.addEventListener('click', closeViewer);
+    viewer.addEventListener('click', (e) => {
+        // Close if the background overlay is clicked, but not the card itself
+        if (e.target === viewer) {
+            closeViewer();
+        }
+    });
 }
 
 // Add preload for better performance

@@ -205,9 +205,8 @@
                 <h2 class="section-title">Experience</h2>
                 <div class="section-line"></div>
             </div>
-            <!-- The new container for simpler vertical timeline -->
-            <div class="vertical-timeline-container" id="vertical-timeline">
-                <!-- Experience items will be dynamically generated here by JS -->
+            <div class="experience-grid" id="experience-grid">
+                <!-- Summary tiles will be injected here by JavaScript -->
             </div>
         </div>
     </section>
@@ -280,6 +279,13 @@
             </div>
         </div>
     </footer>
+    <!-- This is the pop-up viewer for the expanded experience card -->
+    <div class="experience-viewer" id="experience-viewer">
+        <div class="experience-viewer__card" id="experience-viewer-card">
+            <!-- The full, detailed card content will be injected here -->
+        </div>
+        <button class="experience-viewer__close" id="experience-viewer-close">&times;</button>
+    </div>
     <script src="content.js"></script>
     <script src="app.js"></script>
 </body>
