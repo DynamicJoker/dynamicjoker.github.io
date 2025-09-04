@@ -2024,150 +2024,90 @@ html[data-color-scheme="dark"] {
   }
 }
 
-.timeline-item,
-.skill-tag,
-.service-card {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-.section.visible .timeline-item,
-.section.visible .skill-tag,
-.section.visible .service-card {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.experience-scroller {
-    overflow-x: scroll; /* Needed for horizontal scrolling */
-    overflow-y: hidden; /* Hide vertical scrollbar */
-    padding: var(--space-32) 0;
-    cursor: grab; /* Indicate that it's draggable */
-    
-    /* Hiding the scrollbar for a clean look */
-    scrollbar-width: none; /* For Firefox */
-    -ms-overflow-style: none;  /* For Internet Explorer and Edge */
-}
-
-/* For Chrome, Safari and Opera */
-.experience-scroller::-webkit-scrollbar {
-    display: none;
-}
-
-/* The track that holds all the cards in a single row */
-.experience-track {
-    display: inline-flex; /* Allows the container to be wider than the screen */
-    gap: var(--space-32);
-    padding: 0 var(--space-32); /* Adds space at the start and end of the track */
-}
-
-/* The individual experience card */
 .experience-card {
-    flex-shrink: 0; /* Prevents cards from shrinking */
-    width: 80vw; /* On mobile, cards take up most of the screen */
-    max-width: 450px; /* On desktop, they have a max width */
-    background: rgba(255, 255, 255, 0.05);
-    padding: var(--space-32);
-    border-radius: var(--radius-lg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    transition: all var(--animation-speed) var(--animation-curve);
     display: flex;
     flex-direction: column;
 }
-
-.experience-card:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.08);
-    border-color: var(--color-electric-blue);
-    box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
-}
-
-/* When the user is actively dragging */
-.experience-scroller.active {
-    cursor: grabbing;
-}
-
-/* Styling for the content inside the card */
 .experience-period {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-accent-teal);
-    margin-bottom: var(--space-16);
-    letter-spacing: 1px;
-    text-transform: uppercase;
+    font-size: var(--font-size-sm); font-weight: var(--font-weight-medium);
+    color: var(--color-accent-teal); margin-bottom: var(--space-16);
+    letter-spacing: 1px; text-transform: uppercase;
 }
-
 .experience-title {
-    font-size: var(--font-size-xl);
-    color: var(--color-electric-blue);
+    font-size: var(--font-size-xl); color: var(--color-electric-blue);
     margin-bottom: var(--space-8);
 }
-
 .experience-company {
-    font-size: var(--font-size-md);
-    color: var(--color-text-secondary);
+    font-size: var(--font-size-md); color: var(--color-text-secondary);
     margin-bottom: var(--space-20);
 }
-
-.experience-description {
-    line-height: 1.6;
-    color: var(--color-text-secondary);
-    flex-grow: 1; /* Ensures cards with less text still have the same height */
-}
-
-.experience-details {
-    margin: 0;
-    padding: 0;
-}
-
-/* Styling for the bulleted list of responsibilities */
 .experience-details ul {
-    list-style: none; /* Remove default browser bullets */
-    padding-left: var(--space-20);
+    list-style: none; padding-left: var(--space-20);
     margin: 0 0 var(--space-24) 0;
 }
-
 .experience-details ul li {
-    position: relative;
-    padding-bottom: var(--space-8);
-    color: var(--color-text-secondary);
-    line-height: 1.6;
+    position: relative; padding-bottom: var(--space-8);
+    color: var(--color-text-secondary); line-height: 1.6;
 }
-
-/* Custom bullet point that matches the site's aesthetic */
 .experience-details ul li::before {
-    content: '■'; /* You can also use ▸, ◆, or a custom SVG */
-    position: absolute;
-    left: -20px;
-    top: 6px;
-    color: var(--color-electric-blue);
-    font-size: 0.8em;
+    content: '■'; position: absolute; left: -20px; top: 6px;
+    color: var(--color-electric-blue); font-size: 0.8em;
 }
-
-/* Container for the high-impact achievements */
 .experience-achievements {
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: var(--space-16);
-    margin-top: var(--space-16);
-    display: flex;
-    flex-direction: column;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: var(--space-16);
+    margin-top: var(--space-16); display: flex; flex-direction: column;
     gap: var(--space-12);
 }
-
 .achievement-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-12);
-    font-size: var(--font-size-sm);
-    color: var(--color-text);
+    display: flex; align-items: center; gap: var(--space-12);
+    font-size: var(--font-size-sm); color: var(--color-text);
+}
+.achievement-icon { font-size: 1.2em; flex-shrink: 0; }
+
+/* --- 2. Mobile-First Layout (Default) --- */
+.experience-inspector-layout { display: none; }
+.experience-scroller {
+    display: block; overflow-x: scroll; cursor: grab;
+    scrollbar-width: none; -ms-overflow-style: none;
+}
+.experience-scroller::-webkit-scrollbar { display: none; }
+.experience-scroller.active { cursor: grabbing; }
+.experience-scroller .experience-track {
+    display: inline-flex; gap: var(--space-32); padding: 0 var(--space-32);
+}
+.experience-scroller .experience-card {
+    flex-shrink: 0; width: 80vw; max-width: 450px;
+    background: rgba(255, 255, 255, 0.05); padding: var(--space-32);
+    border-radius: var(--radius-lg); border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.achievement-icon {
-    font-size: 1.2em;
-    flex-shrink: 0;
+/* --- 3. Wide Screen Layout --- */
+@media (min-width: 1024px) {
+    .experience-scroller { display: none; }
+    .experience-inspector-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 40px; max-width: 1400px; margin: 60px auto; padding: 0 20px; }
+    .constellation-map-container { position: relative; height: 600px; }
+    .constellation-lines, .constellation-nodes { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    .constellation-lines { overflow: visible; }
+    .constellation-lines .line { stroke: var(--color-electric-blue); stroke-width: 2; opacity: 0.3; transition: opacity 0.4s ease; }
+    .experience-inspector-layout.inspector-active .constellation-lines .line { opacity: 0.1; }
+    .constellation-node-plaque { position: absolute; transform: translate(-50%, -50%); width: 220px; padding: var(--space-12); background: rgba(38, 40, 40, 0.8); backdrop-filter: blur(5px); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-base); cursor: pointer; transition: all var(--animation-speed) var(--animation-curve); }
+    .plaque-title { font-size: 0.9em; font-weight: bold; color: var(--color-text); margin-bottom: 4px; }
+    .plaque-company { font-size: 0.8em; color: var(--color-accent-teal); margin-bottom: 8px; }
+    .plaque-highlight { font-size: 0.8em; color: var(--color-text-secondary); line-height: 1.4; }
+    .plaque-highlight b { color: var(--color-text); }
+    .constellation-node-plaque:hover { transform: translate(-50%, -50%) scale(1.05); border-color: var(--color-electric-blue); box-shadow: 0 0 20px rgba(0, 212, 255, 0.2); }
+    .constellation-node-plaque.active { border-color: var(--color-electric-blue); box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); }
+    .experience-inspector-layout.inspector-active .constellation-node-plaque:not(.active) { opacity: 0.4; filter: grayscale(80%); }
+    .inspector-panel { position: sticky; top: 100px; align-self: start; max-height: calc(100vh - 120px); background: rgba(26, 26, 46, 0.5); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: var(--radius-lg); display: flex; flex-direction: column; transition: all var(--animation-speed) var(--animation-curve); }
+    .inspector-panel-content { padding: var(--space-24); overflow-y: auto; }
+    .inspector-close-btn { position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 1.5rem; color: var(--color-text-secondary); cursor: pointer; transition: color 0.2s ease; opacity: 0; pointer-events: none; }
+    .inspector-close-btn:hover { color: var(--color-electric-blue); }
+    .inspector-panel.active { border-color: var(--color-electric-blue); }
+    .inspector-panel.active .inspector-close-btn { opacity: 1; pointer-events: all; }
+    .inspector-prompt { text-align: center; padding: 40px 20px; color: var(--color-text-secondary); }
+    .prompt-icon { font-size: 2rem; display: block; margin-bottom: 1rem; }
+    .inspector-panel .experience-card { border: none; background: none; padding: 0; }
 }
-
 
 
 /* Critical (Don't Change): Specific fix for skill tags which also had a scale transform */

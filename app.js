@@ -16,8 +16,9 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeExpandableHighlights();
     cacheSectionPositions();
     initializeParallaxEffect();
-    initializeHorizontalScroller();
+    initializeExperienceInspector();
 });
+
 
 // Loading Screen Animation
 function initializeLoadingScreen() {
@@ -765,6 +766,82 @@ function initializeHorizontalScroller() {
         const walk = (x - startX) * 2; // The '* 2' makes the drag feel faster
         scroller.scrollLeft = scrollLeft - walk;
     });
+}
+
+function initializeExperienceInspector() {
+    const layoutContainer = document.getElementById('inspector-layout');
+    const nodesContainer = document.getElementById('constellation-nodes');
+    const linesContainer = document.getElementById('constellation-lines');
+    const panel = document.getElementById('inspector-panel');
+    const panelContent = document.getElementById('inspector-panel-content');
+    const panelCloseBtn = document.getElementById('inspector-close-btn');
+    const scrollerContainer = document.getElementById('experience-scroller-container');
+
+    if (!layoutContainer || typeof experienceData === 'undefined') return;
+    
+    const sortedExperience = [...experienceData].sort((a, b) => new Date(a.period.split(' - ')[0]) - new Date(b.period.split(' - ')[0]));
+
+    // --- Build the Desktop Map ---
+    sortedExperience.forEach((job, i) => {
+        nodesContainer.insertAdjacentHTML('beforeend', `<div class="constellation-node-plaque" data-job-id="${job.id}" style="left: ${job.coords.x}%; top: ${job.coords.y}%;"><div class="plaque-title">${job.title.split(' | ')[0]}</div><div class="plaque-company">${job.company}</div><div class="plaque-highlight">${job.achievements[0].icon} ${job.achievements[0].text}</div></div>`);
+        if (i < sortedExperience.length - 1) {
+            const p1 = job, p2 = sortedExperience[i + 1];
+            linesContainer.insertAdjacentHTML('beforeend', `<line class="line" x1="${p1.coords.x}%" y1="${p1.coords.y}%" x2="${p2.coords.x}%" y2="${p2.coords.y}%" />`);
+        }
+    });
+
+    // --- Build the Mobile Scroller ---
+    const mobileCardsHTML = [...sortedExperience].reverse().map(job => `
+        <div class="experience-card">
+            <div class="experience-period">${job.period}</div>
+            <h3 class="experience-title">${job.title}</h3>
+            <div class="experience-company">${job.company} &middot; ${job.location}</div>
+            <div class="experience-details">
+                <ul>${job.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
+                <div class="experience-achievements">
+                    ${job.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+    scrollerContainer.innerHTML = `<div class="experience-track">${mobileCardsHTML}</div>`;
+
+    // --- Desktop Interaction Logic ---
+    const allPlaques = document.querySelectorAll('.constellation-node-plaque');
+    function closeInspector() {
+        panel.classList.remove('active');
+        layoutContainer.classList.remove('inspector-active');
+        document.querySelector('.constellation-node-plaque.active')?.classList.remove('active');
+        panelContent.innerHTML = `<div class="inspector-prompt"><span class="prompt-icon">👆</span><h3>Select a Node</h3><p>Click on a role in the map to inspect the full details.</p></div>`;
+    }
+    allPlaques.forEach(plaque => {
+        plaque.addEventListener('click', () => {
+            const jobId = plaque.dataset.jobId;
+            const jobData = experienceData.find(j => j.id === jobId);
+            document.querySelector('.constellation-node-plaque.active')?.classList.remove('active');
+            plaque.classList.add('active');
+            layoutContainer.classList.add('inspector-active');
+            panel.classList.add('active');
+            panelContent.innerHTML = `<div class="experience-card"><div class="experience-period">${jobData.period}</div><h3 class="experience-title">${jobData.title}</h3><div class="experience-company">${jobData.company} &middot; ${jobData.location}</div><div class="experience-details"><ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul><div class="experience-achievements">${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}</div></div></div>`;
+        });
+    });
+    panelCloseBtn.addEventListener('click', closeInspector);
+    
+    // =========================================================
+    // --- Fixed: Mobile Scroller Interactions ---
+    // =========================================================
+    // 1. Mouse Wheel Scrolling
+    scrollerContainer.addEventListener('wheel', (evt) => {
+        evt.preventDefault();
+        scrollerContainer.scrollLeft += evt.deltaY;
+    });
+
+    // 2. Drag to Scroll
+    let isDown = false, startX, scrollLeft;
+    scrollerContainer.addEventListener('mousedown', e => { isDown = true; scrollerContainer.classList.add('active'); startX = e.pageX - scrollerContainer.offsetLeft; scrollLeft = scrollerContainer.scrollLeft; });
+    scrollerContainer.addEventListener('mouseleave', () => { isDown = false; scrollerContainer.classList.remove('active'); });
+    scrollerContainer.addEventListener('mouseup', () => { isDown = false; scrollerContainer.classList.remove('active'); });
+    scrollerContainer.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); const walk = (e.pageX - scrollerContainer.offsetLeft - startX) * 2; scrollerContainer.scrollLeft = scrollLeft - walk; });
 }
 
 // Add preload for better performance
