@@ -1,10 +1,36 @@
 // Jerry James Portfolio - Interactive JavaScript
 
+const config = {
+    loadingScreenDuration: 2000,
+    notificationDuration: 5000,
+    scrambleAnimation: {
+        texts: [
+            'Technical Marketing Strategy',
+            'B2B & B2C Narratives',
+            'Inbound Marketing Campaigns',
+            'Content Marketing Wizard'
+        ],
+        delayBetweenTexts: 2000,
+        initialDelay: 2500
+    },
+    heroBlob: {
+        radius: 300,
+        maxStretch: 120,
+        points: 100,
+        noiseSpeed: 0.003,
+        noiseAmount: 0.15,
+        mouseFollowSpeed: 0.08
+    }
+};
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
     initializeLoadingScreen();
     initializeNavigation();
     initializeScrollAnimations();
+    generateSkills();
+    generateServices();
+    generatePortfolioItems();
     initializePortfolioFilters();
     initializeContactForm();
     initializeSmoothScrolling();
@@ -24,14 +50,12 @@ document.addEventListener('DOMContentLoaded', function() {
 function initializeLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
     
-    // Hide loading screen after 2 seconds
     setTimeout(() => {
         loadingScreen.classList.add('hidden');
-        // Remove from DOM after animation completes
         setTimeout(() => {
             loadingScreen.remove();
-        }, 500);
-    }, 2000);
+        }, 500); // Left this as is because it's part of a CSS animation
+    }, config.loadingScreenDuration); // Use config value instead of hardcoded
 }
 
 // Navigation functionality
@@ -225,12 +249,8 @@ function initializeHeroVisuals() {
     if (!svgPath || !heroSection) return;
 
     // --- CONFIGURATION ---
-    const BLOB_RADIUS = 300;
-    const MAX_STRETCH = 120;
-    const BLOB_POINTS = 100;
-    const BLOB_NOISE_SPEED = 0.003;
-    const BLOB_NOISE_AMOUNT = 0.15;
-    const MOUSE_FOLLOW_SPEED = 0.08; 
+    // Replace hardcoded consts with values from the config object
+    const { radius, maxStretch, points, noiseSpeed, noiseAmount, mouseFollowSpeed } = config.heroBlob;
 
     // --- STATE & CORE VARIABLES ---
     let time = 0;
@@ -238,7 +258,6 @@ function initializeHeroVisuals() {
     let centerX = rect.width / 2;
     let centerY = rect.height / 2;
 
-    // Real mouse position
     let mouseX = centerX;
     let mouseY = centerY;
 
@@ -263,29 +282,29 @@ function initializeHeroVisuals() {
 
     // --- THE MAIN ANIMATION LOOP ---
     function animate() {
-        time += BLOB_NOISE_SPEED;
-        virtualMouseX = lerp(virtualMouseX, mouseX, MOUSE_FOLLOW_SPEED);
-        virtualMouseY = lerp(virtualMouseY, mouseY, MOUSE_FOLLOW_SPEED);
+        time += noiseSpeed; // Use config value
+        virtualMouseX = lerp(virtualMouseX, mouseX, mouseFollowSpeed); // Use config value
+        virtualMouseY = lerp(virtualMouseY, mouseY, mouseFollowSpeed); // Use config value
         const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
         const mouseDistance = Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY);
         const pullIntensity = Math.min(mouseDistance / (rect.width / 3), 1);
-        const points = [];
-        for (let i = 0; i < BLOB_POINTS; i++) {
-            const angle = (i / BLOB_POINTS) * Math.PI * 2;
-            const noiseFactor = 1 + BLOB_NOISE_AMOUNT * Math.sin(time + i * 2);
+        const generatedPoints = [];
+        for (let i = 0; i < points; i++) { // Use config value
+            const angle = (i / points) * Math.PI * 2;
+            const noiseFactor = 1 + noiseAmount * Math.sin(time + i * 2); // Use config value
             const alignment = (Math.cos(angle - mouseAngle) + 1) / 2;
-            const stretch = pullIntensity * MAX_STRETCH * alignment;
-            const finalRadius = (BLOB_RADIUS + stretch) * noiseFactor;
-            points.push({
+            const stretch = pullIntensity * maxStretch * alignment; // Use config value
+            const finalRadius = (radius + stretch) * noiseFactor; // Use config value
+            generatedPoints.push({
                 x: Math.cos(angle) * finalRadius,
                 y: Math.sin(angle) * finalRadius
             });
         }
-        svgPath.setAttribute('d', createBlobPath(points));
+        svgPath.setAttribute('d', createBlobPath(generatedPoints));
         requestAnimationFrame(animate);
     }
 
-    // --- Dedicated function to bind all events ---
+    // --- The rest of the function (bindHeroEvents, etc.) remains the same ---
     function bindHeroEvents() {
         const onMouseMove = (e) => {
             const currentRect = heroSection.getBoundingClientRect();
@@ -313,10 +332,9 @@ function initializeHeroVisuals() {
         });
     }
 
-    // --- Final Initialization Steps ---
     svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
-    bindHeroEvents(); // Call the new function to attach events
-    animate();      // Start the animation
+    bindHeroEvents();
+    animate();
 }
 
 // Portfolio filtering functionality
@@ -426,12 +444,7 @@ function initializeScrambleAnimation() {
     if (!typingElement) return;
 
     // --- State & Configuration ---
-    const texts = [
-        'Technical Marketing Strategy',
-        'B2B & B2C Narratives',
-        'Inbound Marketing Campaigns',
-        'Content Marketing Wizard'
-    ];
+    const texts = config.scrambleAnimation.texts;
     let textIndex = 0;
     
     // --- Performance & Browser Detection ---
@@ -521,7 +534,6 @@ function initializeScrambleAnimation() {
     // --- Main Loop ---
     async function next() {
         const text = texts[textIndex];
-        
         // Choose which animation to run based on flags
         if (useFallback) {
             await runFadeAnimation(text);
@@ -530,9 +542,9 @@ function initializeScrambleAnimation() {
         }
         
         textIndex = (textIndex + 1) % texts.length;
-        setTimeout(next, 2000);
+        setTimeout(next, config.scrambleAnimation.delayBetweenTexts); // Use config value
     }
-    setTimeout(next, 2500);
+    setTimeout(next, config.scrambleAnimation.initialDelay);
 }
 
 // Calculate and update years of experience in hero-subtitle
@@ -589,11 +601,11 @@ function showNotification(message, type = 'info') {
     closeButton.addEventListener('click', () => {
         closeNotification(notification);
     });
-    
-    // Auto close after 5 seconds
+
+    // Auto close after config.notificationDuration
     setTimeout(() => {
         closeNotification(notification);
-    }, 5000);
+    }, config.notificationDuration); // Use config value
 }
 
 function closeNotification(notification) {
@@ -672,6 +684,59 @@ document.addEventListener('keydown', (e) => {
         }
     }
 });
+
+function generateSkills() {
+    const skillsGrid = document.getElementById('skills-grid');
+    if (!skillsGrid) return;
+
+    const skillsHTML = siteContent.skills.map(category => `
+        <div class="skill-category">
+            <h3 class="skill-category-title">${category.category}</h3>
+            <div class="skill-tags">
+                ${category.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
+            </div>
+        </div>
+    `).join('');
+    skillsGrid.innerHTML = skillsHTML;
+}
+
+function generateServices() {
+    const servicesGrid = document.getElementById('services-grid');
+    if (!servicesGrid) return;
+
+    const servicesHTML = siteContent.services.map(service => `
+        <div class="service-card">
+            <div class="service-icon">${service.icon}</div>
+            <h3 class="service-title">${service.title}</h3>
+            <p class="service-description">${service.description}</p>
+        </div>
+    `).join('');
+    servicesGrid.innerHTML = servicesHTML;
+}
+
+function generatePortfolioItems() {
+    const portfolioGrid = document.getElementById('portfolio-grid');
+    if (!portfolioGrid) return;
+
+    const portfolioHTML = siteContent.portfolio.map(item => `
+        <div class="portfolio-item" data-category="${item.category}">
+            <div class="portfolio-card">
+                <div class="portfolio-header">
+                    <h3 class="portfolio-title">${item.title}</h3>
+                    <span class="portfolio-category">${item.category.toUpperCase()}</span>
+                </div>
+                <p class="portfolio-description">${item.description}</p>
+                <div class="portfolio-results">
+                    ${item.results.map(result => `<div class="result-item">${result}</div>`).join('')}
+                </div>
+                <div class="portfolio-tags">
+                    ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
+    portfolioGrid.innerHTML = portfolioHTML;
+}
 
 function initializeLogoCarousel() {
     const logos = document.querySelectorAll('.logo-bar .logo-item');
@@ -777,9 +842,9 @@ function initializeExperienceInspector() {
     const panelCloseBtn = document.getElementById('inspector-close-btn');
     const scrollerContainer = document.getElementById('experience-scroller-container');
 
-    if (!layoutContainer || typeof experienceData === 'undefined') return;
+    if (!layoutContainer || typeof siteContent === 'undefined') return;
     
-    const sortedExperience = [...experienceData].sort((a, b) => new Date(a.period.split(' - ')[0]) - new Date(b.period.split(' - ')[0]));
+    const sortedExperience = [...siteContent.experience].sort((a, b) => new Date(a.period.split(' - ')[0]) - new Date(b.period.split(' - ')[0]));
 
     // --- Build the Desktop Map ---
     sortedExperience.forEach((job, i) => {
@@ -817,7 +882,7 @@ function initializeExperienceInspector() {
     allPlaques.forEach(plaque => {
         plaque.addEventListener('click', () => {
             const jobId = plaque.dataset.jobId;
-            const jobData = experienceData.find(j => j.id === jobId);
+            const jobData = siteContent.experience.find(j => j.id === jobId);
             document.querySelector('.constellation-node-plaque.active')?.classList.remove('active');
             plaque.classList.add('active');
             layoutContainer.classList.add('inspector-active');
