@@ -21,6 +21,9 @@ const config = {
         noiseAmount: 0.15,
         mouseFollowSpeed: 0.08
     },
+    navbar: {
+        height: 70 // The height of the navbar in pixels
+    },
     // --- NEW: Centralized config for the interactive timeline ---
     timeline: {
         layout: {
@@ -39,6 +42,31 @@ const config = {
         }
     }
 };
+
+function createElement(tag, options = {}, children = []) {
+    const el = document.createElement(tag);
+
+    // Set attributes and properties
+    Object.entries(options).forEach(([key, value]) => {
+        if (key === 'className') {
+            el.classList.add(...value.split(' ')); // Support multiple classes
+        } else if (key === 'dataset') {
+            Object.entries(value).forEach(([dataKey, dataValue]) => {
+                el.dataset[dataKey] = dataValue;
+            });
+        } else {
+            el[key] = value;
+        }
+    });
+
+    // Append child elements
+    children.forEach(child => {
+        el.append(child);
+    });
+
+    return el;
+}
+
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize all components
@@ -238,7 +266,6 @@ function updateActiveNavLink() {
 // Scroll-triggered animations
 function initializeScrollAnimations() {
     const sections = document.querySelectorAll('.section');
-    const timeline = document.querySelector('.timeline');
     
     const observerOptions = {
         threshold: 0.1,
@@ -444,7 +471,8 @@ function initializeSmoothScrolling() {
             const targetSection = document.querySelector(targetId);
             
             if (targetSection) {
-                const offsetTop = targetSection.offsetTop - 70; // Account for fixed navbar
+                // Use the value from the config object instead
+                const offsetTop = targetSection.offsetTop - config.navbar.height; 
                 
                 window.scrollTo({
                     top: offsetTop,
@@ -706,73 +734,80 @@ function generateSkills() {
     const skillsGrid = document.getElementById('skills-grid');
     if (!skillsGrid) return;
 
-    const skillsHTML = siteContent.skills.map(category => {
-        let contentHTML;
+    skillsGrid.innerHTML = ''; // Clear existing content
 
-        // NEW: Check for our 'pane' type
+    siteContent.skills.forEach(category => {
+        const tagElements = category.tags.map(tag =>
+            createElement('span', { className: 'skill-tag', textContent: tag })
+        );
+
+        let contentContainer;
+        const tagsContainer = createElement('div', { className: 'skill-tags' }, tagElements);
+
         if (category.type === 'pane') {
-            const paneTagsHTML = category.tags.map(tag => 
-                `<span class="skill-tag">${tag}</span>` // Uses the SAME class as the default
-            ).join('');
-            // Wrap the tags in the new scrollable container
-            contentHTML = `<div class="skill-pane-container"><div class="skill-tags">${paneTagsHTML}</div></div>`;
-
+            contentContainer = createElement('div', { className: 'skill-pane-container' }, [tagsContainer]);
         } else {
-            // This is the original logic for the other three lists. It remains unchanged.
-            const tagsHTML = category.tags.map(tag => 
-                `<span class="skill-tag">${tag}</span>`
-            ).join('');
-            contentHTML = `<div class="skill-tags">${tagsHTML}</div>`;
+            contentContainer = tagsContainer;
         }
 
-        // Return the full HTML for the category card
-        return `
-            <div class="skill-category">
-                <h3 class="skill-category-title">${category.category}</h3>
-                ${contentHTML}
-            </div>
-        `;
-    }).join('');
+        const categoryCard = createElement('div', { className: 'skill-category card-base' }, [
+            createElement('h3', { className: 'skill-category-title', textContent: category.category }),
+            contentContainer
+        ]);
 
-    skillsGrid.innerHTML = skillsHTML;
+        skillsGrid.appendChild(categoryCard);
+    });
 }
 
 function generateServices() {
     const servicesGrid = document.getElementById('services-grid');
     if (!servicesGrid) return;
 
-    const servicesHTML = siteContent.services.map(service => `
-        <div class="service-card">
-            <div class="service-icon">${service.icon}</div>
-            <h3 class="service-title">${service.title}</h3>
-            <p class="service-description">${service.description}</p>
-        </div>
-    `).join('');
-    servicesGrid.innerHTML = servicesHTML;
+    // Clear any existing content
+    servicesGrid.innerHTML = ''; 
+
+    siteContent.services.forEach(service => {
+        const card = createElement('div', { className: 'service-card card-base' }, [
+            createElement('div', { className: 'service-icon', textContent: service.icon }),
+            createElement('h3', { className: 'service-title', textContent: service.title }),
+            createElement('p', { className: 'service-description', textContent: service.description })
+        ]);
+        servicesGrid.appendChild(card);
+    });
 }
 
 function generatePortfolioItems() {
     const portfolioGrid = document.getElementById('portfolio-grid');
     if (!portfolioGrid) return;
 
-    const portfolioHTML = siteContent.portfolio.map(item => `
-        <div class="portfolio-item" data-category="${item.category}">
-            <div class="portfolio-card">
-                <div class="portfolio-header">
-                    <h3 class="portfolio-title">${item.title}</h3>
-                    <span class="portfolio-category">${item.category.toUpperCase()}</span>
-                </div>
-                <p class="portfolio-description">${item.description}</p>
-                <div class="portfolio-results">
-                    ${item.results.map(result => `<div class="result-item">${result}</div>`).join('')}
-                </div>
-                <div class="portfolio-tags">
-                    ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-            </div>
-        </div>
-    `).join('');
-    portfolioGrid.innerHTML = portfolioHTML;
+    portfolioGrid.innerHTML = ''; // Clear existing content
+
+    siteContent.portfolio.forEach(item => {
+        const resultElements = item.results.map(result =>
+            createElement('div', { className: 'result-item', textContent: result })
+        );
+
+        const tagElements = item.tags.map(tag =>
+            createElement('span', { className: 'tag', textContent: tag })
+        );
+
+        const portfolioCard = createElement('div', { className: 'portfolio-card card-base' }, [
+            createElement('div', { className: 'portfolio-header' }, [
+                createElement('h3', { className: 'portfolio-title', textContent: item.title }),
+                createElement('span', { className: 'portfolio-category', textContent: item.category.toUpperCase() })
+            ]),
+            createElement('p', { className: 'portfolio-description', textContent: item.description }),
+            createElement('div', { className: 'portfolio-results' }, resultElements),
+            createElement('div', { className: 'portfolio-tags' }, tagElements)
+        ]);
+        
+        const portfolioItem = createElement('div', {
+            className: 'portfolio-item',
+            dataset: { category: item.category }
+        }, [portfolioCard]);
+
+        portfolioGrid.appendChild(portfolioItem);
+    });
 }
 
 function initializeLogoCarousel() {
@@ -816,6 +851,13 @@ function initializeExpandableHighlights() {
             // If the clicked item was not the one that was just closed, open it.
             if (!isExpanded) {
                 item.classList.add('expanded');
+            }
+        });
+        item.addEventListener('keydown', (event) => {
+            // Check if the key pressed was Enter or Space
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault(); // Prevents spacebar from scrolling the page
+                item.click(); // Programmatically trigger the existing click event
             }
         });
     });
@@ -881,22 +923,26 @@ function initializeExpandableGrid() {
         return;
     }
 
-    // --- 1. GENERATE SUMMARY TILES ---
+// --- 1. GENERATE SUMMARY TILES ---
+    grid.innerHTML = ''; // Clear the grid first
     const sortedExperience = [...siteContent.experience].sort((a, b) => {
         const aDate = a.period.includes('Present') ? new Date() : new Date(a.period.split(' - ')[1]);
         const bDate = b.period.includes('Present') ? new Date() : new Date(b.period.split(' - ')[1]);
         return bDate - aDate; // Newest first
     });
 
-    const gridHTML = sortedExperience.map(job => `
-        <div class="experience-tile" data-id="${job.id}">
-            <div class="tile-period">${job.period}</div>
-            <h3 class="tile-title">${job.title}</h3>
-            <div class="tile-company">${job.company}</div>
-            <div class="tile-cta">View Details &rarr;</div>
-        </div>
-    `).join('');
-    grid.innerHTML = gridHTML;
+    sortedExperience.forEach(job => {
+        const tile = createElement('div', {
+            className: 'experience-tile card-base',
+            dataset: { id: job.id }
+        }, [
+            createElement('div', { className: 'tile-period', textContent: job.period }),
+            createElement('h3', { className: 'tile-title', textContent: job.title }),
+            createElement('div', { className: 'tile-company', textContent: job.company }),
+            createElement('div', { className: 'tile-cta', innerHTML: 'View Details &rarr;' })
+        ]);
+        grid.appendChild(tile);
+    });
 
     // --- 2. THE ANIMATION LOGIC ---
     let lastClickedTile = null;

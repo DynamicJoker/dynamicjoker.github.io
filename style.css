@@ -450,6 +450,21 @@ select.form-control {
 }
 
 /* Card component */
+
+/* --- NEW: Base utility class for all card-like elements --- */
+.card-base {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    /* Standardize the transition for all cards */
+    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+.card-base:hover {
+    background: rgba(255, 255, 255, 0.08); /* Use 0.08 for a consistent hover background */
+    border-color: var(--color-electric-blue);
+}
+
 .card {
   background-color: var(--color-surface);
   border-radius: var(--radius-lg);
@@ -1172,17 +1187,10 @@ html[data-color-scheme="dark"] {
 }
 
 .skill-category {
-  background: rgba(255, 255, 255, 0.05);
   padding: var(--space-32);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all var(--animation-speed) var(--animation-curve);
 }
-
 .skill-category:hover {
   transform: translateY(-5px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-electric-blue);
 }
 
 .skill-category-title {
@@ -1296,14 +1304,14 @@ html[data-color-scheme="dark"] {
 }
 
 .service-card {
-  background: rgba(255, 255, 255, 0.05);
   padding: var(--space-32);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
   text-align: center;
-  transition: all var(--animation-speed) var(--animation-curve);
   position: relative;
   overflow: hidden;
+}
+.service-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 
 .service-card::before {
@@ -1319,13 +1327,6 @@ html[data-color-scheme="dark"] {
 
 .service-card:hover::before {
   left: 100%;
-}
-
-.service-card:hover {
-  transform: translateY(-10px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-electric-blue);
-  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 
 .service-icon {
@@ -1388,20 +1389,13 @@ html[data-color-scheme="dark"] {
 }
 
 .portfolio-card {
-  background: rgba(255, 255, 255, 0.05);
   padding: var(--space-32);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all var(--animation-speed) var(--animation-curve);
   height: 100%;
   display: flex;
   flex-direction: column;
 }
-
 .portfolio-card:hover {
   transform: translateY(-10px);
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-electric-blue);
   box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 
@@ -1462,110 +1456,6 @@ html[data-color-scheme="dark"] {
   color: var(--color-text-secondary);
 }
 
-/* Experience Section */
-.timeline {
-  position: relative;
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 40px 0;
-}
-
-.timeline::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--color-electric-blue), var(--color-accent-teal));
-  z-index: 1;
-}
-
-.timeline-item {
-  position: relative;
-  width: 50%;
-  padding: 0 40px 60px 0;
-  box-sizing: border-box;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 2;
-}
-
-.timeline-item .timeline-marker {
-  position: absolute;
-  top: 24px;
-  right: -9px;
-  left: auto;
-  width: 18px;
-  height: 18px;
-  background: var(--color-electric-blue);
-  border-radius: 50%;
-  border: 3px solid var(--color-dark-primary);
-  box-shadow: 0 0 0 3px var(--color-electric-blue);
-  z-index: 3;
-}
-
-.timeline-item .timeline-content {
-  background: rgba(255, 255, 255, 0.05);
-  padding: var(--space-24);
-  border-radius: var(--radius-lg);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all var(--animation-speed) var(--animation-curve);
-  text-align: left;
-  box-shadow: none;
-}
-
-.timeline-content:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-electric-blue);
-  transform: translateY(-10px);
-  box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
-}
-
-.timeline-item--right {
-  left: 50%;
-  padding: 0 0 60px 40px;
-}
-
-.timeline-item--right .timeline-marker {
-  left: -9px;
-  right: auto;
-}
-
-.timeline-item--right .timeline-content {
-  text-align: right;
-}
-
-.timeline-item--right .timeline-content:hover {
-  /* Keep right alignment on hover */
-  text-align: right;
-}
-
-@media (max-width: 900px) {
-  .timeline-item,
-  .timeline-item--right {
-    width: 100%;
-    left: 0 !important;
-    padding: 0 0 60px 0;
-  }
-  .timeline::before {
-    left: 24px;
-    transform: none;
-  }
-  .timeline-item .timeline-marker,
-  .timeline-item--right .timeline-marker {
-    left: 15px;
-    right: auto;
-  }
-  .timeline-item .timeline-content,
-  .timeline-item--right .timeline-content {
-    margin-left: 50px;
-    margin-right: 0;
-    text-align: left;
-  }
-}
 
 /* Contact Section */
 .contact-content {
@@ -2088,18 +1978,13 @@ html[data-color-scheme="dark"] {
 }
 
 .experience-tile {
-    background: rgba(255, 255, 255, 0.05);
     padding: var(--space-24);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-lg);
     cursor: pointer;
+    /* The opacity transition is for when the grid fades out */
     transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, opacity 0.5s ease;
 }
-
 .experience-tile:hover {
     transform: translateY(-5px);
-    background: rgba(255, 255, 255, 0.1);
-    border-color: var(--color-electric-blue);
 }
 
 .tile-period {
@@ -2287,26 +2172,3 @@ html[data-color-scheme="dark"] {
     border-radius: 2px;
     opacity: 0.5;
 }
-
-/* Delays for Service Cards (150ms interval) */
-.section.visible .service-card:nth-child(2) { transition-delay: 150ms; }
-.section.visible .service-card:nth-child(3) { transition-delay: 300ms; }
-.section.visible .service-card:nth-child(4) { transition-delay: 450ms; }
-.section.visible .service-card:nth-child(5) { transition-delay: 600ms; }
-.section.visible .service-card:nth-child(6) { transition-delay: 750ms; }
-
-/* Delays for Skill Tags (50ms interval) */
-/* Note: These apply across all .skill-tag elements within a visible section */
-.section.visible .skill-tag:nth-child(2) { transition-delay: 50ms; }
-.section.visible .skill-tag:nth-child(3) { transition-delay: 100ms; }
-.section.visible .skill-tag:nth-child(4) { transition-delay: 150ms; }
-.section.visible .skill-tag:nth-child(5) { transition-delay: 200ms; }
-.section.visible .skill-tag:nth-child(6) { transition-delay: 250ms; }
-/* ...add more if needed */
-
-/* Delays for Timeline Items (200ms interval) */
-.section.visible .timeline-item:nth-child(2) { transition-delay: 200ms; }
-.section.visible .timeline-item:nth-child(3) { transition-delay: 400ms; }
-.section.visible .timeline-item:nth-child(4) { transition-delay: 600ms; }
-.section.visible .timeline-item:nth-child(5) { transition-delay: 800ms; }
-.section.visible .timeline-item:nth-child(6) { transition-delay: 1000ms; }
