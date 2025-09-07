@@ -75,6 +75,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeScrollAnimations();
     generateSkills();
     generateServices();
+    generateTestimonialColumns();
+    initializeInfiniteScroller();
     generatePortfolioItems();
     initializePortfolioFilters();
     initializeContactForm();
@@ -773,6 +775,64 @@ function generateServices() {
             createElement('p', { className: 'service-description', textContent: service.description })
         ]);
         servicesGrid.appendChild(card);
+    });
+}
+
+function generateTestimonialColumns() {
+    const container = document.getElementById('testimonials-container');
+    if (!container) return;
+
+    const testimonials = siteContent.testimonials;
+    const numColumns = 3;
+    const columns = [];
+
+    // Create column elements
+    for (let i = 0; i < numColumns; i++) {
+        const column = createElement('div', { className: 'testimonials-scroller-column' });
+        const inner = createElement('div', { className: 'testimonials-scroller-inner' });
+        column.appendChild(inner);
+        container.appendChild(column);
+        columns.push(inner);
+    }
+    
+    // Distribute testimonials into columns
+    testimonials.forEach((testimonial, index) => {
+        const card = createElement('div', { className: 'testimonial-card' }, [
+            createElement('div', { className: 'testimonial-header' }, [
+                createElement('img', { className: 'testimonial-image', src: testimonial.image, alt: testimonial.name }),
+                createElement('div', { className: 'testimonial-author-info' }, [
+                    createElement('p', { className: 'testimonial-author', textContent: testimonial.name }),
+                    createElement('p', { className: 'testimonial-title', textContent: `${testimonial.title}, ${testimonial.company}` })
+                ])
+            ]),
+            createElement('p', { className: 'testimonial-quote', textContent: `"${testimonial.quote}"` })
+        ]);
+        
+        // Add card to the next available column
+        columns[index % numColumns].appendChild(card);
+    });
+}
+
+
+// NEW function to handle the infinite scroll animation setup
+function initializeInfiniteScroller() {
+    const scrollers = document.querySelectorAll(".testimonials-scroller-column");
+
+    scrollers.forEach((scroller) => {
+        const scrollerInner = scroller.querySelector(".testimonials-scroller-inner");
+        const scrollerContent = Array.from(scrollerInner.children);
+
+        // Duplicate the content for the infinite loop effect
+        scrollerContent.forEach(item => {
+            const duplicatedItem = item.cloneNode(true);
+            // Add aria-hidden to duplicated content for screen readers
+            duplicatedItem.setAttribute("aria-hidden", true);
+            scrollerInner.appendChild(duplicatedItem);
+        });
+
+        // Set a custom property for the animation duration
+        const speed = Math.floor(Math.random() * (120 - 80 + 1) + 80); // Random speed between 80s and 120s
+        scrollerInner.style.setProperty('--scroll-duration', `${speed}s`);
     });
 }
 

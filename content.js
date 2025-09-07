@@ -143,5 +143,70 @@ const siteContent = {
           title: 'Performance Analytics',
           description: 'Data analysis and reporting to measure campaign effectiveness and optimize marketing performance.'
       }
+  ], 
+  testimonials: [
+      {
+          name: 'John Doe',
+          title: 'CEO',
+          company: 'Tech Solutions Inc.',
+          quote: 'Jerry has an unparalleled ability to translate complex technical concepts into compelling marketing messages. Our lead generation increased by 300% thanks to his content strategy.',
+          image: 'https://i.pravatar.cc/100?u=john-doe'
+      },
+      {
+          name: 'Jane Smith',
+          title: 'Marketing Director',
+          company: 'Innovate Corp.',
+          quote: 'Working with Jerry was a game-changer. His strategic insights and execution on our B2B campaigns were instrumental in us exceeding our quarterly targets.',
+          image: 'https://i.pravatar.cc/100?u=jane-smith'
+      },
+      {
+          name: 'Sam Wilson',
+          title: 'Product Manager',
+          company: 'Gadget Masters',
+          quote: 'The B2C campaign Jerry developed was a resounding success. He has a deep understanding of the consumer mindset and how to engage them effectively.',
+          image: 'https://i.pravatar.cc/100?u=sam-wilson'
+      },
+      {
+          name: 'Emily White',
+          title: 'Head of Content',
+          company: 'CyberGuard',
+          quote: 'The series of white papers Jerry created for us not only generated a significant number of qualified leads but also positioned us as thought leaders in the cybersecurity space.',
+          image: 'https://i.pravatar.cc/100?u=emily-white'
+      },
+      {
+          name: 'Michael Brown',
+          title: 'Founder',
+          company: 'SaaSify',
+          quote: 'Jerry\'s expertise in technical marketing was crucial for our SaaS platform launch. He is a true professional and a pleasure to work with.',
+          image: 'https://i.pravatar.cc/100?u=michael-brown'
+      },
+      {
+          name: 'Sarah Green',
+          title: 'CMO',
+          company: 'Data Dynamics',
+          quote: 'We saw an 85% improvement in our lead nurturing process after Jerry implemented and optimized our marketing automation workflows. Highly recommended.',
+          image: 'https://i.pravatar.cc/100?u=sarah-green'
+      },
+      {
+          name: 'David Lee',
+          title: 'Brand Manager',
+          company: 'Quantum Electronics',
+          quote: 'The integrated B2C campaign for our new product line achieved a 150% ROI, far exceeding our expectations. Jerry\'s data-driven approach was key.',
+          image: 'https://i.pravatar.cc/100?u=david-lee'
+      },
+      {
+          name: 'Laura Chen',
+          title: 'VP of Engineering',
+          company: 'CloudNet',
+          quote: 'Jerry\'s ability to create clear and concise API documentation was a huge asset to our development team and our partners.',
+          image: 'https://i.pravatar.cc/100?u=laura-chen'
+      },
+      {
+          name: 'Chris Taylor',
+          title: 'Operations Manager',
+          company: 'Global Manufacturing',
+          quote: 'The marketing automation system Jerry put in place saved us countless hours and significantly increased our sales-ready leads.',
+          image: 'https://i.pravatar.cc/100?u=chris-taylor'
+      }
   ]
 };

@@ -2172,3 +2172,99 @@ html[data-color-scheme="dark"] {
     border-radius: 2px;
     opacity: 0.5;
 }
+
+/* --- INFINITE VERTICAL SCROLLER STYLES --- */
+
+#testimonials {
+    /* This helps contain the child elements correctly. */
+    position: relative;
+}
+
+.testimonials-scroller {
+    display: flex;
+    gap: var(--space-24);
+    /* 
+      CORE FIX: Use a fixed height instead of max-height.
+      This reserves a specific block of space in the page layout, preventing overlap.
+    */
+    height: 600px;
+}
+
+.testimonials-scroller-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+    /* A slightly more pronounced fade effect */
+    -webkit-mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+.testimonials-scroller-inner {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-24);
+    animation: scroll-vertical var(--scroll-duration, 100s) linear infinite;
+}
+
+/* Applies the alternating scroll direction */
+.testimonials-scroller-column:nth-child(even) .testimonials-scroller-inner {
+    animation-direction: reverse;
+}
+
+/* Pauses animation on hover */
+.testimonials-scroller:hover .testimonials-scroller-inner {
+    animation-play-state: paused;
+}
+
+@keyframes scroll-vertical {
+    from { transform: translateY(0); }
+    to { transform: translateY(-50%); }
+}
+
+/* Card styling (unchanged) */
+.testimonial-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    padding: var(--space-24);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+}
+.testimonial-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-16);
+}
+.testimonial-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--color-electric-blue);
+}
+.testimonial-author-info { line-height: 1.3; }
+.testimonial-author { font-weight: var(--font-weight-bold); color: var(--color-text); }
+.testimonial-title { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+.testimonial-quote {
+    font-style: italic;
+    color: var(--color-text-secondary);
+    border-left: 3px solid var(--color-electric-blue);
+    padding-left: var(--space-16);
+}
+
+
+/* --- RESPONSIVE FIX --- */
+@media (max-width: 768px) {
+    .testimonials-scroller {
+        flex-direction: column;
+        /* CORE FIX: Use a smaller, but still fixed, height on mobile. */
+        height: 500px;
+    }
+    /* Hide the other columns on mobile */
+    .testimonials-scroller-column:nth-child(2),
+    .testimonials-scroller-column:nth-child(3) {
+        display: none;
+    }
+}
