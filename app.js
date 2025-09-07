@@ -24,54 +24,28 @@ const config = {
     navbar: {
         height: 70 // The height of the navbar in pixels
     },
-    // --- NEW: Centralized config for the interactive timeline ---
     timeline: {
         layout: {
-            topPadding: 40,      // Initial space from the top of the section
-            verticalMargin: 40   // The vertical gap between panes in the SAME column
+            topPadding: 40,
+            verticalMargin: 40
         },
         scroll: {
-            navbarOffset: 80     // The space to leave for the sticky navbar when scrolling
+            navbarOffset: 80
         },
         animation: {
-            fadeInThreshold: 0.1, // How much of the card must be visible to trigger the fade-in (0.0 to 1.0)
-            highlightRootMargin: "-40% 0px -55% 0px" // Defines the "activation zone" for highlighting. Top, Right, Bottom, Left.
+            fadeInThreshold: 0.1,
+            highlightRootMargin: "-40% 0px -55% 0px"
         },
         performance: {
-            throttleLimit: 10 // The delay in ms for the scroll-based line animation
+            throttleLimit: 10
         }
     }
 };
 
-function createElement(tag, options = {}, children = []) {
-    const el = document.createElement(tag);
-
-    // Set attributes and properties
-    Object.entries(options).forEach(([key, value]) => {
-        if (key === 'className') {
-            el.classList.add(...value.split(' ')); // Support multiple classes
-        } else if (key === 'dataset') {
-            Object.entries(value).forEach(([dataKey, dataValue]) => {
-                el.dataset[dataKey] = dataValue;
-            });
-        } else {
-            el[key] = value;
-        }
-    });
-
-    // Append child elements
-    children.forEach(child => {
-        el.append(child);
-    });
-
-    return el;
-}
-
-
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize all components
+document.addEventListener('DOMContentLoaded', () => {
     initializeLoadingScreen();
     initializeNavigation();
+    cacheSectionPositions();
     initializeScrollAnimations();
     generateSkills();
     generateServices();
@@ -87,71 +61,55 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeSmartGlow();
     initializeLogoCarousel();
     initializeExpandableHighlights();
-    cacheSectionPositions();
     initializeParallaxEffect();
     initializeExpandableGrid();
+    preloadCriticalResources();
+    console.log('Jerry James Portfolio initialized successfully! 🚀');
 });
 
 
 // Loading Screen Animation
 function initializeLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
-    
     setTimeout(() => {
         loadingScreen.classList.add('hidden');
-        setTimeout(() => {
-            loadingScreen.remove();
-        }, 500); // Left this as is because it's part of a CSS animation
-    }, config.loadingScreenDuration); // Use config value instead of hardcoded
-}
-
-// Navigation functionality
-function initializeMobileMenu() {
-    const hamburger = document.getElementById('hamburger');
-    const navMenu = document.getElementById('nav-menu');
-    const navLinks = document.querySelectorAll('.nav-link');
-
-    if (!hamburger || !navMenu) return;
-
-    // Mobile menu toggle
-    hamburger.addEventListener('click', () => {
-        hamburger.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
-
-    // Close mobile menu when clicking on a link
-    navLinks.forEach(link => {
-        link.addEventListener('click', () => {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-        });
-    });
-}
-
-// Handles the navbar's background style change on scroll
-function initializeNavbarScroll() {
-    const navbar = document.getElementById('navbar');
-    if (!navbar) return;
-
-    // This new function just adds or removes the '.scrolled' class
-    function updateNavbarOnScroll() {
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        
-        if (scrollTop > 10) {
-            navbar.classList.add('scrolled');
-        } else {
-            navbar.classList.remove('scrolled');
-        }
-        updateActiveNavLink(); // This function is still needed here
-    }
-    window.addEventListener('scroll', updateNavbarOnScroll);
-    updateNavbarOnScroll();
+        setTimeout(() => loadingScreen.remove(), 500);
+    }, config.loadingScreenDuration);
 }
 
 // Navigation functionality
 function initializeNavigation() {
-    initializeMobileMenu();
-    initializeNavbarScroll();
+    const hamburger = document.getElementById('hamburger');
+    const navMenu = document.getElementById('nav-menu');
+    const navLinks = document.querySelectorAll('.nav-link');
+    const navbar = document.getElementById('navbar');
+
+    if (hamburger && navMenu) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+            });
+        });
+    }
+
+    if (navbar) {
+        const updateNavbarOnScroll = () => {
+            if (window.pageYOffset > 10) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+            updateActiveNavLink();
+        };
+        window.addEventListener('scroll', updateNavbarOnScroll);
+        updateNavbarOnScroll();
+    }
 }
 
 function initializeSmartGlow() {
@@ -161,45 +119,26 @@ function initializeSmartGlow() {
     let titleData = [];
     
     function cacheTitlePositions() {
-        // Select both the hero title and the section titles
-        const heroTitle = document.querySelector('.hero-name');
-        const sectionTitles = document.querySelectorAll('.section-title');
-
-        // Create a combined list of all title elements
-        const allTitles = [];
-        if (heroTitle) {
-            allTitles.push(heroTitle); // Add the hero title first
-        }
-        allTitles.push(...sectionTitles); // Add the rest of the titles
-
-        // Map over the combined list to get positions
-        titleData = allTitles.map(title => {
-        const rect = title.getBoundingClientRect();
-        return {
-            top: rect.top + window.scrollY,
-            centerX: rect.left + rect.width / 2
-        };
+        const titles = document.querySelectorAll('.hero-name, .section-title');
+        titleData = Array.from(titles).map(title => {
+            const rect = title.getBoundingClientRect();
+            return { top: rect.top + window.scrollY, centerX: rect.left + rect.width / 2 };
         });
     }
 
     const activationRange = 500;
     const baseGlow = { size: 50, opacity: 0.4 };
     const peakGlow = { size: 300, opacity: 0.8 };
-    const glowColorRgb = '0, 212, 255'; // Electric Blue
+    const glowColorRgb = '0, 212, 255';
 
     function updateGlow() {
         const scrollY = window.scrollY;
         const navBottom = scrollY + navbar.offsetHeight;
 
-        let prevTitle = null;
-        let nextTitle = null;
+        let prevTitle = null, nextTitle = null;
         for (const title of titleData) {
-            if (title.top < navBottom) {
-                prevTitle = title;
-            } else {
-                nextTitle = title;
-                break;
-            }
+            if (title.top < navBottom) prevTitle = title;
+            else { nextTitle = title; break; }
         }
         
         const distToPrev = prevTitle ? navBottom - prevTitle.top : Infinity;
@@ -207,20 +146,13 @@ function initializeSmartGlow() {
         const activeTitle = distToNext < distToPrev ? nextTitle : prevTitle;
         const closestDist = Math.min(distToPrev, distToNext);
 
-        let intensity = 0;
-        if (activeTitle && closestDist < activationRange) {
-            intensity = 1 - (closestDist / activationRange);
-        }
-        intensity = Math.max(0, intensity);
-        if (scrollY < 10) {
-            intensity = 0;
-        }
+        let intensity = (activeTitle && closestDist < activationRange) ? 1 - (closestDist / activationRange) : 0;
+        intensity = Math.max(0, scrollY < 10 ? 0 : intensity);
+        
         const sizeX = baseGlow.size + (peakGlow.size - baseGlow.size) * intensity;
         const opacity = baseGlow.opacity + (peakGlow.opacity - baseGlow.opacity) * intensity;
         
-        if (activeTitle) {
-            navbar.style.setProperty('--glow-position-x', `${activeTitle.centerX}px`);
-        }
+        if (activeTitle) navbar.style.setProperty('--glow-position-x', `${activeTitle.centerX}px`);
         navbar.style.setProperty('--glow-size', `${sizeX}px 5px`);
         navbar.style.setProperty('--glow-color', `rgba(${glowColorRgb}, ${opacity})`);
         navbar.style.setProperty('--glow-opacity', intensity);
@@ -233,60 +165,39 @@ function initializeSmartGlow() {
 }
 
 let sectionData = [];
-// Read DOM properties and store them in cache
 function cacheSectionPositions() {
-    const sections = document.querySelectorAll('section[id]');
-    sectionData = Array.from(sections).map(section => {
-        return {
-            id: section.getAttribute('id'),
-            // Read from DOM here, only once.
-            top: section.offsetTop - 100, // Apply the offset during caching
-            height: section.offsetHeight
-        };
-    });
+    sectionData = Array.from(document.querySelectorAll('section[id]')).map(section => ({
+        id: section.getAttribute('id'),
+        top: section.offsetTop - 100,
+        height: section.offsetHeight
+    }));
 }
 
-// Update active navigation link based on scroll position
 function updateActiveNavLink() {
     const scrollY = window.scrollY;
-    const navLinks = document.querySelectorAll('.nav-link');
     let currentSectionId = '';
-
-    // Read from cached data, instead of DOM
     for (const section of sectionData) {
         if (scrollY >= section.top && scrollY < section.top + section.height) {
             currentSectionId = section.id;
-            break; // Exit the loop when it finds an active section
+            break;
         }
     }
-    // Write to the DOM
-    navLinks.forEach(link => {
+    document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === `#${currentSectionId}`);
     });
 }
 
-// Scroll-triggered animations
 function initializeScrollAnimations() {
-    const sections = document.querySelectorAll('.section');
-    
-    const observerOptions = {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    };
-    
     const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.classList.add('visible');
-            // The observer's only job now is to add the .visible class.
-            observer.unobserve(entry.target); 
-        }
-    });
-}, observerOptions);
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
     
-    sections.forEach(section => {
-        observer.observe(section);
-    });
+    document.querySelectorAll('.section').forEach(section => observer.observe(section));
 }
 
 function initializeHeroVisuals() {
@@ -294,161 +205,94 @@ function initializeHeroVisuals() {
     const heroSection = document.getElementById('hero');
     if (!svgPath || !heroSection) return;
 
-    // --- CONFIGURATION ---
-    // Replace hardcoded consts with values from the config object
     const { radius, maxStretch, points, noiseSpeed, noiseAmount, mouseFollowSpeed } = config.heroBlob;
-
-    // --- STATE & CORE VARIABLES ---
     let time = 0;
     let rect = heroSection.getBoundingClientRect();
-    let centerX = rect.width / 2;
-    let centerY = rect.height / 2;
+    let centerX = rect.width / 2, centerY = rect.height / 2;
+    let mouseX = centerX, mouseY = centerY;
+    let virtualMouseX = centerX, virtualMouseY = centerY;
 
-    let mouseX = centerX;
-    let mouseY = centerY;
+    const lerp = (start, end, amount) => start * (1 - amount) + end * amount;
 
-    let virtualMouseX = centerX;
-    let virtualMouseY = centerY;
-
-    // --- HELPER FUNCTIONS ---
-    function lerp(start, end, amount) { return start * (1 - amount) + end * amount; }
-
-    function createBlobPath(points) {
-        if (points.length < 3) return '';
-        let d = `M ${points[0].x} ${points[0].y}`;
-        for (let i = 0; i < points.length; i++) {
-            const p1 = points[i];
-            const p2 = points[(i + 1) % points.length];
-            const midPoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
-            d += ` Q ${p1.x},${p1.y} ${midPoint.x},${midPoint.y}`;
+    function createBlobPath(pts) {
+        let d = `M ${pts[0].x} ${pts[0].y}`;
+        for (let i = 0; i < pts.length; i++) {
+            const p1 = pts[i], p2 = pts[(i + 1) % pts.length];
+            d += ` Q ${p1.x},${p1.y} ${(p1.x + p2.x) / 2},${(p1.y + p2.y) / 2}`;
         }
-        d += ' Z';
-        return d;
+        return d + ' Z';
     }
 
-    // --- THE MAIN ANIMATION LOOP ---
     function animate() {
-        time += noiseSpeed; // Use config value
-        virtualMouseX = lerp(virtualMouseX, mouseX, mouseFollowSpeed); // Use config value
-        virtualMouseY = lerp(virtualMouseY, mouseY, mouseFollowSpeed); // Use config value
+        time += noiseSpeed;
+        virtualMouseX = lerp(virtualMouseX, mouseX, mouseFollowSpeed);
+        virtualMouseY = lerp(virtualMouseY, mouseY, mouseFollowSpeed);
         const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
-        const mouseDistance = Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY);
-        const pullIntensity = Math.min(mouseDistance / (rect.width / 3), 1);
-        const generatedPoints = [];
-        for (let i = 0; i < points; i++) { // Use config value
+        const pullIntensity = Math.min(Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY) / (rect.width / 3), 1);
+        
+        const generatedPoints = Array.from({ length: points }, (_, i) => {
             const angle = (i / points) * Math.PI * 2;
-            const noiseFactor = 1 + noiseAmount * Math.sin(time + i * 2); // Use config value
-            const alignment = (Math.cos(angle - mouseAngle) + 1) / 2;
-            const stretch = pullIntensity * maxStretch * alignment; // Use config value
-            const finalRadius = (radius + stretch) * noiseFactor; // Use config value
-            generatedPoints.push({
-                x: Math.cos(angle) * finalRadius,
-                y: Math.sin(angle) * finalRadius
-            });
-        }
+            const noiseFactor = 1 + noiseAmount * Math.sin(time + i * 2);
+            const stretch = pullIntensity * maxStretch * (Math.cos(angle - mouseAngle) + 1) / 2;
+            const finalRadius = (radius + stretch) * noiseFactor;
+            return { x: Math.cos(angle) * finalRadius, y: Math.sin(angle) * finalRadius };
+        });
+
         svgPath.setAttribute('d', createBlobPath(generatedPoints));
         requestAnimationFrame(animate);
     }
 
-    // --- The rest of the function (bindHeroEvents, etc.) remains the same ---
-    function bindHeroEvents() {
-        const onMouseMove = (e) => {
-            const currentRect = heroSection.getBoundingClientRect();
-            mouseX = e.clientX - currentRect.left;
-            mouseY = e.clientY - currentRect.top;
-        };
-        
-        const onMouseLeave = () => {
-            mouseX = centerX;
-            mouseY = centerY;
-        };
-
-        heroSection.addEventListener('mousemove', onMouseMove);
-        heroSection.addEventListener('mouseleave', onMouseLeave);
-
-        window.addEventListener('resize', () => { 
-            rect = heroSection.getBoundingClientRect(); 
-            centerX = rect.width / 2;
-            centerY = rect.height / 2;
-            mouseX = centerX;
-            mouseY = centerY;
-            virtualMouseX = centerX;
-            virtualMouseY = centerY;
-            svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
-        });
-    }
+    heroSection.addEventListener('mousemove', e => {
+        const currentRect = heroSection.getBoundingClientRect();
+        mouseX = e.clientX - currentRect.left;
+        mouseY = e.clientY - currentRect.top;
+    });
+    heroSection.addEventListener('mouseleave', () => { mouseX = centerX; mouseY = centerY; });
+    window.addEventListener('resize', () => { 
+        rect = heroSection.getBoundingClientRect(); 
+        centerX = rect.width / 2; centerY = rect.height / 2;
+        mouseX = virtualMouseX = centerX; mouseY = virtualMouseY = centerY;
+        svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
+    });
 
     svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
-    bindHeroEvents();
     animate();
 }
 
-// Portfolio filtering functionality
 function initializePortfolioFilters() {
     const filterButtons = document.querySelectorAll('.filter-btn');
     const portfolioItems = document.querySelectorAll('.portfolio-item');
     
     filterButtons.forEach(button => {
         button.addEventListener('click', () => {
-            const filter = button.getAttribute('data-filter');
-            
-            // Update active filter button
+            const filter = button.dataset.filter;
             filterButtons.forEach(btn => btn.classList.remove('active'));
             button.classList.add('active');
             
-            // Filter portfolio items
             portfolioItems.forEach(item => {
-                const category = item.getAttribute('data-category');
-                
-                if (filter === 'all' || category === filter) {
-                    item.classList.remove('hidden');
-                    item.style.opacity = '1';
-                    item.style.transform = 'scale(1)';
-                } else {
-                    item.classList.add('hidden');
-                    item.style.opacity = '0';
-                    item.style.transform = 'scale(0.8)';
-                }
+                const isVisible = filter === 'all' || item.dataset.category === filter;
+                item.classList.toggle('hidden', !isVisible);
+                item.style.opacity = isVisible ? '1' : '0';
+                item.style.transform = isVisible ? 'scale(1)' : 'scale(0.8)';
             });
         });
     });
 }
 
-// Contact form handling
 function initializeContactForm() {
     const form = document.getElementById('contact-form');
-    const formInputs = form.querySelectorAll('.form-control');
+    if (!form) return;
     
-    // Add focus animations to form inputs
-    formInputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            input.parentElement.classList.add('focused');
-        });
-        
-        input.addEventListener('blur', () => {
-            if (!input.value) {
-                input.parentElement.classList.remove('focused');
-            }
-        });
-    });
-    
-    // Form submission
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        
         const formData = new FormData(form);
-        const data = Object.fromEntries(formData);
-        
-        // Simple validation
-        if (!data.name || !data.email || !data.message) {
+        if (!formData.get('name') || !formData.get('email') || !formData.get('message')) {
             showNotification('Please fill in all required fields.', 'error');
             return;
         }
         
-        // Simulate form submission
         const submitButton = form.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
-        
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
         
@@ -461,23 +305,14 @@ function initializeContactForm() {
     });
 }
 
-// Smooth scrolling for navigation links
 function initializeSmoothScrolling() {
-    const navLinks = document.querySelectorAll('a[href^="#"]');
-    
-    navLinks.forEach(link => {
+    document.querySelectorAll('a[href^="#"]').forEach(link => {
         link.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            const targetId = link.getAttribute('href');
-            const targetSection = document.querySelector(targetId);
-            
+            const targetSection = document.querySelector(link.getAttribute('href'));
             if (targetSection) {
-                // Use the value from the config object instead
-                const offsetTop = targetSection.offsetTop - config.navbar.height; 
-                
                 window.scrollTo({
-                    top: offsetTop,
+                    top: targetSection.offsetTop - config.navbar.height,
                     behavior: 'smooth'
                 });
             }
@@ -485,46 +320,17 @@ function initializeSmoothScrolling() {
     });
 }
 
-// Scramble animation for hero subtitle
 function initializeScrambleAnimation() {
     const typingElement = document.getElementById('typing-text');
     if (!typingElement) return;
 
-    // --- State & Configuration ---
     const texts = config.scrambleAnimation.texts;
     let textIndex = 0;
     
-    // --- Performance & Browser Detection ---
-    const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-    let useFallback = isSafari; // Start by using fallback for Safari
-    let performanceCheckComplete = isSafari; // No need to check performance on Safari
-
-    // --- Animation Function 1: Simple & Performant Fade (The Fallback) ---
-    const runFadeAnimation = (newText) => {
-        return new Promise((resolve) => {
-            const FADE_DURATION = 300;
-            typingElement.classList.add('scramble-fade-out');
-            setTimeout(() => {
-                typingElement.innerText = newText;
-                typingElement.classList.remove('scramble-fade-out');
-                setTimeout(resolve, FADE_DURATION);
-            }, FADE_DURATION);
-        });
-    };
-
-    // --- Animation Function 2: Full Scramble with Performance Check ---
     const runScrambleAnimation = (newText) => {
-        const chars = '!<>-_\\/[]{}—=+*^?#________';
-        let frameRequest, frame = 0, queue = [], resolvePromise;
-        
-        // Performance measurement variables
-        let frameCount = 0;
-        let startTime = performance.now();
-        const FPS_THRESHOLD = 45; // If FPS is below this, switch to fallback
-        const CHECK_DURATION = 1000; // Measure for 1 second
-
         return new Promise((resolve) => {
-            resolvePromise = resolve;
+            const chars = '!<>-_\\/[]{}—=+*^?#________';
+            let frameRequest, frame = 0, queue = [];
             const oldText = typingElement.innerText;
             const length = Math.max(oldText.length, newText.length);
             for (let i = 0; i < length; i++) {
@@ -532,444 +338,217 @@ function initializeScrambleAnimation() {
                 const start = Math.floor(Math.random() * 55), end = start + Math.floor(Math.random() * 55);
                 queue.push({ from, to, start, end });
             }
+            
+            const update = () => {
+                let output = '', complete = 0;
+                for (let i = 0, n = queue.length; i < n; i++) {
+                    let { from, to, start, end, char } = queue[i];
+                    if (frame >= end) { complete++; output += to; }
+                    else if (frame >= start) {
+                        if (!char || Math.random() < 0.28) {
+                            char = chars[Math.floor(Math.random() * chars.length)];
+                            queue[i].char = char;
+                        }
+                        output += `<span class="scramble-char">${char}</span>`;
+                    } else output += from;
+                }
+                typingElement.innerHTML = output;
+                if (complete === queue.length) { resolve(); return; }
+                frameRequest = requestAnimationFrame(update);
+                frame++;
+            };
             cancelAnimationFrame(frameRequest);
             update();
         });
-
-        function update() {
-            // --- Performance Check (runs only once) ---
-            if (!performanceCheckComplete) {
-                const elapsedTime = performance.now() - startTime;
-                frameCount++;
-                if (elapsedTime >= CHECK_DURATION) {
-                    const fps = frameCount / (elapsedTime / 1000);
-                    if (fps < FPS_THRESHOLD) {
-                        useFallback = true; // Set the flag to use the fallback next time
-                    }
-                    performanceCheckComplete = true; // Mark the check as done
-                }
-            }
-
-            // --- Animation Logic (unchanged) ---
-            let output = '', complete = 0;
-            for (let i = 0, n = queue.length; i < n; i++) {
-                let { from, to, start, end, char } = queue[i];
-                if (frame >= end) {
-                    complete++;
-                    output += to;
-                } else if (frame >= start) {
-                    if (!char || Math.random() < 0.28) {
-                        char = chars[Math.floor(Math.random() * chars.length)];
-                        queue[i].char = char;
-                    }
-                    output += `<span class="scramble-char">${char}</span>`;
-                } else {
-                    output += from;
-                }
-            }
-            typingElement.innerHTML = output;
-
-            if (complete === queue.length) {
-                resolvePromise();
-                return;
-            }
-            frameRequest = requestAnimationFrame(update);
-            frame++;
-        }
     };
 
-    // --- Main Loop ---
     async function next() {
-        const text = texts[textIndex];
-        // Choose which animation to run based on flags
-        if (useFallback) {
-            await runFadeAnimation(text);
-        } else {
-            await runScrambleAnimation(text);
-        }
-        
+        await runScrambleAnimation(texts[textIndex]);
         textIndex = (textIndex + 1) % texts.length;
-        setTimeout(next, config.scrambleAnimation.delayBetweenTexts); // Use config value
+        setTimeout(next, config.scrambleAnimation.delayBetweenTexts);
     }
     setTimeout(next, config.scrambleAnimation.initialDelay);
 }
 
-// Calculate and update years of experience in hero-subtitle
 function updateYearsExperience() {
-    const start = new Date(2014, 7); // August is month 7 (0-indexed)
-    const now = new Date();
-    let years = now.getFullYear() - start.getFullYear();
-    if (now.getMonth() < 7) years--;
     const el = document.getElementById('years-experience');
-    if (el) el.textContent = years;
+    if(el) el.textContent = new Date().getFullYear() - 2014;
 }
 
-// Notification system
 function showNotification(message, type = 'info') {
-    // Remove existing notifications
-    const existingNotifications = document.querySelectorAll('.notification');
-    existingNotifications.forEach(notification => notification.remove());
+    document.querySelectorAll('.notification').forEach(n => n.remove());
     
     const notification = document.createElement('div');
     notification.className = `notification notification--${type}`;
-    notification.innerHTML = `
-        <div class="notification-content">
-            <span class="notification-message">${message}</span>
-            <button class="notification-close">&times;</button>
-        </div>
-    `;
-    
-    // Add notification styles
-    notification.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        background: ${type === 'success' ? 'rgba(20, 184, 166, 0.95)' : 'rgba(239, 68, 68, 0.95)'};
-        color: white;
-        padding: 16px 20px;
-        border-radius: 8px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-        z-index: 10000;
-        transform: translateX(100%);
-        transition: transform 0.3s ease;
-        max-width: 400px;
-        backdrop-filter: blur(10px);
-    `;
-    
+    notification.innerHTML = `<div class="notification-content"><span class="notification-message">${message}</span><button class="notification-close">&times;</button></div>`;
+    notification.style.cssText = `position:fixed;top:100px;right:20px;background:${type==='success'?'rgba(20,184,166,0.95)':'rgba(239,68,68,0.95)'};color:white;padding:16px 20px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.2);z-index:10000;transform:translateX(100%);transition:transform .3s ease;backdrop-filter:blur(10px);`;
     document.body.appendChild(notification);
-    
-    // Animate in
-    setTimeout(() => {
-        notification.style.transform = 'translateX(0)';
-    }, 100);
-    
-    // Close button functionality
-    const closeButton = notification.querySelector('.notification-close');
-    closeButton.addEventListener('click', () => {
-        closeNotification(notification);
-    });
+    setTimeout(() => notification.style.transform = 'translateX(0)', 100);
 
-    // Auto close after config.notificationDuration
-    setTimeout(() => {
-        closeNotification(notification);
-    }, config.notificationDuration); // Use config value
+    const close = () => {
+        notification.style.transform = 'translateX(100%)';
+        setTimeout(() => notification.remove(), 300);
+    };
+    notification.querySelector('.notification-close').addEventListener('click', close);
+    setTimeout(close, config.notificationDuration);
 }
 
-function closeNotification(notification) {
-    notification.style.transform = 'translateX(100%)';
-    setTimeout(() => {
-        if (notification.parentNode) {
-            notification.parentNode.removeChild(notification);
-        }
-    }, 300);
-}
-
-// Parallax effect for hero section
 function initializeParallaxEffect() {
     const heroBackground = document.querySelector('.hero-background');
     if (!heroBackground) return;
-
     let isTicking = false;
-
-    function updateParallax() {
-        const scrolled = window.pageYOffset;
-        const rate = scrolled * -0.5;
-        // The transform will only be updated when the browser is ready to paint
-        heroBackground.style.transform = `translateY(${rate}px)`;
-        isTicking = false;
-    }
-
     document.addEventListener('scroll', () => {
         if (!isTicking) {
-            window.requestAnimationFrame(updateParallax);
+            window.requestAnimationFrame(() => {
+                heroBackground.style.transform = `translateY(${window.pageYOffset * -0.5}px)`;
+                isTicking = false;
+            });
             isTicking = true;
         }
     });
 }
 
-// Removed hover effects for interactive elements in JS - Moved to CSS only
-
-// Performance optimization - throttle scroll events
-function throttle(func, limit) {
+const throttle = (func, limit) => {
     let inThrottle;
     return function() {
-        const args = arguments;
-        const context = this;
         if (!inThrottle) {
-            func.apply(context, args);
+            func.apply(this, arguments);
             inThrottle = true;
             setTimeout(() => inThrottle = false, limit);
         }
     };
-}
+};
 
-// New event listener to update scroll cache positions if window size changes
 window.addEventListener('resize', cacheSectionPositions);
-
-// Apply throttling to scroll events
-const throttledScrollHandler = throttle(() => {
-    updateActiveNavLink();
-}, 100);
-
-window.addEventListener('scroll', throttledScrollHandler);
-
-// Add loading states and error handling
-window.addEventListener('error', (e) => {
-    console.error('An error occurred:', e.error);
-});
-
-// Add accessibility improvements
+window.addEventListener('scroll', throttle(updateActiveNavLink, 100));
 document.addEventListener('keydown', (e) => {
-    // ESC key to close mobile menu
-    if (e.key === 'Escape') {
-        const hamburger = document.getElementById('hamburger');
-        const navMenu = document.getElementById('nav-menu');
-        
-        if (navMenu.classList.contains('active')) {
-            hamburger.classList.remove('active');
-            navMenu.classList.remove('active');
-        }
+    if (e.key === 'Escape' && document.getElementById('nav-menu').classList.contains('active')) {
+        document.getElementById('hamburger').classList.remove('active');
+        document.getElementById('nav-menu').classList.remove('active');
     }
 });
 
 function generateSkills() {
     const skillsGrid = document.getElementById('skills-grid');
     if (!skillsGrid) return;
-
-    skillsGrid.innerHTML = ''; // Clear existing content
-
-    siteContent.skills.forEach(category => {
-        const tagElements = category.tags.map(tag =>
-            createElement('span', { className: 'skill-tag', textContent: tag })
-        );
-
-        let contentContainer;
-        const tagsContainer = createElement('div', { className: 'skill-tags' }, tagElements);
-
-        if (category.type === 'pane') {
-            contentContainer = createElement('div', { className: 'skill-pane-container' }, [tagsContainer]);
-        } else {
-            contentContainer = tagsContainer;
-        }
-
-        const categoryCard = createElement('div', { className: 'skill-category card-base' }, [
-            createElement('h3', { className: 'skill-category-title', textContent: category.category }),
-            contentContainer
-        ]);
-
-        skillsGrid.appendChild(categoryCard);
-    });
+    skillsGrid.innerHTML = siteContent.skills.map(category => `
+        <div class="skill-category card-base">
+            <h3 class="skill-category-title">${category.category}</h3>
+            <div class="${category.type === 'pane' ? 'skill-pane-container' : 'skill-tags'}">
+                <div class="${category.type !== 'pane' ? '' : 'skill-tags'}">
+                    ${category.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function generateServices() {
     const servicesGrid = document.getElementById('services-grid');
     if (!servicesGrid) return;
-
-    // Clear any existing content
-    servicesGrid.innerHTML = ''; 
-
-    siteContent.services.forEach(service => {
-        const card = createElement('div', { className: 'service-card card-base' }, [
-            createElement('div', { className: 'service-icon', textContent: service.icon }),
-            createElement('h3', { className: 'service-title', textContent: service.title }),
-            createElement('p', { className: 'service-description', textContent: service.description })
-        ]);
-        servicesGrid.appendChild(card);
-    });
+    servicesGrid.innerHTML = siteContent.services.map(service => `
+        <div class="service-card card-base">
+            <div class="service-icon">${service.icon}</div>
+            <h3 class="service-title">${service.title}</h3>
+            <p class="service-description">${service.description}</p>
+        </div>
+    `).join('');
 }
 
 function generateTestimonialColumns() {
     const container = document.getElementById('testimonials-container');
     if (!container) return;
 
-    const testimonials = siteContent.testimonials;
     const numColumns = 3;
-    const columns = [];
-
-    // Create column elements
-    for (let i = 0; i < numColumns; i++) {
-        const column = createElement('div', { className: 'testimonials-scroller-column' });
-        const inner = createElement('div', { className: 'testimonials-scroller-inner' });
-        column.appendChild(inner);
-        container.appendChild(column);
-        columns.push(inner);
-    }
+    const columns = Array.from({ length: numColumns }, () => []);
     
-    // Distribute testimonials into columns
-    testimonials.forEach((testimonial, index) => {
-        const card = createElement('div', { className: 'testimonial-card' }, [
-            createElement('div', { className: 'testimonial-header' }, [
-                createElement('img', { className: 'testimonial-image', src: testimonial.image, alt: testimonial.name }),
-                createElement('div', { className: 'testimonial-author-info' }, [
-                    createElement('p', { className: 'testimonial-author', textContent: testimonial.name }),
-                    createElement('p', { className: 'testimonial-title', textContent: `${testimonial.title}, ${testimonial.company}` })
-                ])
-            ]),
-            createElement('p', { className: 'testimonial-quote', textContent: `"${testimonial.quote}"` })
-        ]);
-        
-        // Add card to the next available column
-        columns[index % numColumns].appendChild(card);
+    siteContent.testimonials.forEach((testimonial, index) => {
+        columns[index % numColumns].push(testimonial);
     });
+
+    container.innerHTML = columns.map(column => `
+        <div class="testimonials-scroller-column">
+            <div class="testimonials-scroller-inner">
+                ${column.map(testimonial => `
+                    <div class="testimonial-card">
+                        <div class="testimonial-header">
+                            <img class="testimonial-image" src="${testimonial.image}" alt="${testimonial.name}">
+                            <div class="testimonial-author-info">
+                                <p class="testimonial-author">${testimonial.name}</p>
+                                <p class="testimonial-title">${testimonial.title}, ${testimonial.company}</p>
+                            </div>
+                        </div>
+                        <p class="testimonial-quote">"${testimonial.quote}"</p>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
 }
 
-
-// NEW function to handle the infinite scroll animation setup
 function initializeInfiniteScroller() {
-    const scrollers = document.querySelectorAll(".testimonials-scroller-column");
-
-    scrollers.forEach((scroller) => {
+    document.querySelectorAll(".testimonials-scroller-column").forEach(scroller => {
         const scrollerInner = scroller.querySelector(".testimonials-scroller-inner");
         const scrollerContent = Array.from(scrollerInner.children);
-
-        // Duplicate the content for the infinite loop effect
         scrollerContent.forEach(item => {
             const duplicatedItem = item.cloneNode(true);
-            // Add aria-hidden to duplicated content for screen readers
             duplicatedItem.setAttribute("aria-hidden", true);
             scrollerInner.appendChild(duplicatedItem);
         });
-
-        // Set a custom property for the animation duration
-        const speed = Math.floor(Math.random() * (120 - 80 + 1) + 80); // Random speed between 80s and 120s
-        scrollerInner.style.setProperty('--scroll-duration', `${speed}s`);
+        scrollerInner.style.setProperty('--scroll-duration', `${Math.floor(Math.random() * 41) + 80}s`);
     });
 }
 
 function generatePortfolioItems() {
     const portfolioGrid = document.getElementById('portfolio-grid');
     if (!portfolioGrid) return;
-
-    portfolioGrid.innerHTML = ''; // Clear existing content
-
-    siteContent.portfolio.forEach(item => {
-        const resultElements = item.results.map(result =>
-            createElement('div', { className: 'result-item', textContent: result })
-        );
-
-        const tagElements = item.tags.map(tag =>
-            createElement('span', { className: 'tag', textContent: tag })
-        );
-
-        const portfolioCard = createElement('div', { className: 'portfolio-card card-base' }, [
-            createElement('div', { className: 'portfolio-header' }, [
-                createElement('h3', { className: 'portfolio-title', textContent: item.title }),
-                createElement('span', { className: 'portfolio-category', textContent: item.category.toUpperCase() })
-            ]),
-            createElement('p', { className: 'portfolio-description', textContent: item.description }),
-            createElement('div', { className: 'portfolio-results' }, resultElements),
-            createElement('div', { className: 'portfolio-tags' }, tagElements)
-        ]);
-        
-        const portfolioItem = createElement('div', {
-            className: 'portfolio-item',
-            dataset: { category: item.category }
-        }, [portfolioCard]);
-
-        portfolioGrid.appendChild(portfolioItem);
-    });
+    portfolioGrid.innerHTML = siteContent.portfolio.map(item => `
+        <div class="portfolio-item" data-category="${item.category}">
+            <div class="portfolio-card card-base">
+                <div class="portfolio-header">
+                    <h3 class="portfolio-title">${item.title}</h3>
+                    <span class="portfolio-category">${item.category.toUpperCase()}</span>
+                </div>
+                <p class="portfolio-description">${item.description}</p>
+                <div class="portfolio-results">
+                    ${item.results.map(result => `<div class="result-item">${result}</div>`).join('')}
+                </div>
+                <div class="portfolio-tags">
+                    ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function initializeLogoCarousel() {
     const logos = document.querySelectorAll('.logo-bar .logo-item');
     if (logos.length === 0) return;
-
     let currentIndex = 0;
-    const intervalTime = 3000; // Time each logo is highlighted
-
-    function updateSpotlight() {
-        logos.forEach((logo, index) => {
-            logo.classList.toggle('active', index === currentIndex);
-        });
-    }
-
-    updateSpotlight();
-
-    // Set an interval to advance the spotlight
     setInterval(() => {
+        logos.forEach((logo, index) => logo.classList.toggle('active', index === currentIndex));
         currentIndex = (currentIndex + 1) % logos.length;
-        updateSpotlight();
-    }, intervalTime);
+    }, 3000);
 }
 
 function initializeExpandableHighlights() {
-    const highlightsContainer = document.querySelector('.about-highlights');
-    if (!highlightsContainer) return;
-
-    const highlights = highlightsContainer.querySelectorAll('.highlight-item');
-
-    highlights.forEach(item => {
-        item.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent the document click listener from firing
-            
-            // Check if the clicked item is already expanded
+    const container = document.querySelector('.about-highlights');
+    if (!container) return;
+    
+    container.querySelectorAll('.highlight-item').forEach(item => {
+        const handler = (event) => {
+            if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
+            event.preventDefault();
+            event.stopPropagation();
             const isExpanded = item.classList.contains('expanded');
-
-            // First, close any item that is currently open
-            highlightsContainer.querySelector('.expanded')?.classList.remove('expanded');
-
-            // If the clicked item was not the one that was just closed, open it.
-            if (!isExpanded) {
-                item.classList.add('expanded');
-            }
-        });
-        item.addEventListener('keydown', (event) => {
-            // Check if the key pressed was Enter or Space
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault(); // Prevents spacebar from scrolling the page
-                item.click(); // Programmatically trigger the existing click event
-            }
-        });
+            container.querySelector('.expanded')?.classList.remove('expanded');
+            if (!isExpanded) item.classList.add('expanded');
+        };
+        item.addEventListener('click', handler);
+        item.addEventListener('keydown', handler);
     });
 
-    // Add a listener to close an expanded item by clicking outside
-    document.addEventListener('click', () => {
-        highlightsContainer.querySelector('.expanded')?.classList.remove('expanded');
-    });
-}
-
-function initializeHorizontalScroller() {
-    const scroller = document.querySelector('.experience-scroller');
-    if (!scroller) return;
-
-    // --- 1. Mouse Wheel Scrolling ---
-    scroller.addEventListener('wheel', (evt) => {
-        // Prevent the default vertical scroll
-        evt.preventDefault();
-        // Add the vertical scroll amount to the horizontal scroll position
-        scroller.scrollLeft += evt.deltaY;
-    });
-
-    // --- 2. Drag to Scroll ---
-    let isDown = false;
-    let startX;
-    let scrollLeft;
-
-    scroller.addEventListener('mousedown', (e) => {
-        isDown = true;
-        scroller.classList.add('active');
-        // Get the initial mouse position and scroll position
-        startX = e.pageX - scroller.offsetLeft;
-        scrollLeft = scroller.scrollLeft;
-    });
-
-    scroller.addEventListener('mouseleave', () => {
-        isDown = false;
-        scroller.classList.remove('active');
-    });
-
-    scroller.addEventListener('mouseup', () => {
-        isDown = false;
-        scroller.classList.remove('active');
-    });
-
-    scroller.addEventListener('mousemove', (e) => {
-        if (!isDown) return; // Stop if mouse button is not held down
-        e.preventDefault();
-        const x = e.pageX - scroller.offsetLeft;
-        const walk = (x - startX) * 2; // The '* 2' makes the drag feel faster
-        scroller.scrollLeft = scrollLeft - walk;
-    });
+    document.addEventListener('click', () => container.querySelector('.expanded')?.classList.remove('expanded'));
 }
 
 function initializeExpandableGrid() {
@@ -977,46 +556,39 @@ function initializeExpandableGrid() {
     const viewer = document.getElementById('experience-viewer');
     const viewerCard = document.getElementById('experience-viewer-card');
     const closeButton = document.getElementById('experience-viewer-close');
+    if (!grid || !viewer) return;
 
-    if (!grid || !viewer || !viewerCard || !closeButton) {
-        console.error('Expandable grid elements not found!');
-        return;
-    }
+    const sortedExperience = [...siteContent.experience].sort((a, b) => new Date(b.period.split(' - ')[1] || new Date()) - new Date(a.period.split(' - ')[1] || new Date()));
+    grid.innerHTML = sortedExperience.map(job => `
+        <div class="experience-tile card-base" data-id="${job.id}">
+            <div class="tile-period">${job.period}</div>
+            <h3 class="tile-title">${job.title}</h3>
+            <div class="tile-company">${job.company}</div>
+            <div class="tile-cta">View Details &rarr;</div>
+        </div>
+    `).join('');
 
-// --- 1. GENERATE SUMMARY TILES ---
-    grid.innerHTML = ''; // Clear the grid first
-    const sortedExperience = [...siteContent.experience].sort((a, b) => {
-        const aDate = a.period.includes('Present') ? new Date() : new Date(a.period.split(' - ')[1]);
-        const bDate = b.period.includes('Present') ? new Date() : new Date(b.period.split(' - ')[1]);
-        return bDate - aDate; // Newest first
-    });
-
-    sortedExperience.forEach(job => {
-        const tile = createElement('div', {
-            className: 'experience-tile card-base',
-            dataset: { id: job.id }
-        }, [
-            createElement('div', { className: 'tile-period', textContent: job.period }),
-            createElement('h3', { className: 'tile-title', textContent: job.title }),
-            createElement('div', { className: 'tile-company', textContent: job.company }),
-            createElement('div', { className: 'tile-cta', innerHTML: 'View Details &rarr;' })
-        ]);
-        grid.appendChild(tile);
-    });
-
-    // --- 2. THE ANIMATION LOGIC ---
     let lastClickedTile = null;
+
+    const closeViewer = () => {
+        if (!lastClickedTile) return;
+        const startRect = lastClickedTile.getBoundingClientRect();
+        const endRect = viewerCard.getBoundingClientRect();
+        viewerCard.style.transform = `translate(${startRect.left - endRect.left}px, ${startRect.top - endRect.top}px) scale(${startRect.width / endRect.width}, ${startRect.height / endRect.height})`;
+        grid.classList.remove('is-faded');
+        viewer.classList.remove('is-active');
+        viewerCard.addEventListener('transitionend', () => {
+            viewer.classList.remove('is-visible');
+            viewerCard.classList.remove('is-animating');
+        }, { once: true });
+    };
 
     grid.addEventListener('click', (e) => {
         const tile = e.target.closest('.experience-tile');
         if (!tile) return;
-
-        lastClickedTile = tile; // Remember which tile was clicked
-        const jobId = tile.dataset.id;
-        const jobData = siteContent.experience.find(j => j.id === jobId);
-
-        // Populate the viewer with the full card content
-        const detailHTML = `
+        lastClickedTile = tile;
+        const jobData = siteContent.experience.find(j => j.id === tile.dataset.id);
+        viewerCard.innerHTML = `
             <div class="experience-header">
                 <div class="experience-period">${jobData.period}</div>
                 <h3 class="experience-title">${jobData.title}</h3>
@@ -1024,33 +596,16 @@ function initializeExpandableGrid() {
             </div>
             <div class="experience-highlights">
                 <h4 class="highlights-title">Key Highlights</h4>
-                <div class="highlights-grid">
-                    ${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}
-                </div>
+                <div class="highlights-grid">${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}</div>
             </div>
-            <div class="experience-details">
-                <ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul>
-            </div>
+            <div class="experience-details"><ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul></div>
         `;
-        viewerCard.innerHTML = detailHTML;
-
-        // --- FLIP ANIMATION (First, Last, Invert, Play) ---
-        // 1. First: Get the position of the clicked tile.
-        const startRect = tile.getBoundingClientRect();
         
-        // Make viewer visible but fully transparent to calculate final position
+        const startRect = tile.getBoundingClientRect();
         viewer.classList.add('is-visible');
         const endRect = viewerCard.getBoundingClientRect();
-
-        // 2. Invert: Calculate the difference and apply as an initial transform.
-        const deltaX = startRect.left - endRect.left;
-        const deltaY = startRect.top - endRect.top;
-        const deltaW = startRect.width / endRect.width;
-        const deltaH = startRect.height / endRect.height;
-
-        viewerCard.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${deltaW}, ${deltaH})`;
+        viewerCard.style.transform = `translate(${startRect.left - endRect.left}px, ${startRect.top - endRect.top}px) scale(${startRect.width / endRect.width}, ${startRect.height / endRect.height})`;
         
-        // 3. Play: Force a reflow, then remove the transform to animate.
         requestAnimationFrame(() => {
             grid.classList.add('is-faded');
             viewer.classList.add('is-active');
@@ -1059,43 +614,11 @@ function initializeExpandableGrid() {
         });
     });
 
-    function closeViewer() {
-        if (!lastClickedTile) return;
-
-        // Animate back to the original tile's position
-        const startRect = lastClickedTile.getBoundingClientRect();
-        const endRect = viewerCard.getBoundingClientRect();
-
-        const deltaX = startRect.left - endRect.left;
-        const deltaY = startRect.top - endRect.top;
-        const deltaW = startRect.width / endRect.width;
-        const deltaH = startRect.height / endRect.height;
-        
-        viewerCard.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(${deltaW}, ${deltaH})`;
-        
-        grid.classList.remove('is-faded');
-        viewer.classList.remove('is-active');
-
-        // Wait for the animation to finish before hiding the viewer
-        viewerCard.addEventListener('transitionend', () => {
-            viewer.classList.remove('is-visible');
-            viewerCard.classList.remove('is-animating');
-            viewerCard.innerHTML = ''; // Clean up content
-        }, { once: true });
-    }
-
     closeButton.addEventListener('click', closeViewer);
-    viewer.addEventListener('click', (e) => {
-        // Close if the background overlay is clicked, but not the card itself
-        if (e.target === viewer) {
-            closeViewer();
-        }
-    });
+    viewer.addEventListener('click', (e) => e.target === viewer && closeViewer());
 }
 
-// Add preload for better performance
 function preloadCriticalResources() {
-    // Preload critical CSS variables and fonts
     const link = document.createElement('link');
     link.rel = 'preload';
     link.href = 'https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2';
@@ -1104,8 +627,3 @@ function preloadCriticalResources() {
     link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
 }
-
-preloadCriticalResources();
-
-// Final initialization check
-console.log('Jerry James Portfolio initialized successfully! 🚀');
