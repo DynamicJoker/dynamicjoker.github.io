@@ -72,7 +72,7 @@ const siteContent = {
       {
           category: 'content',
           title: 'Technical White Paper Series',
-          description: 'Created a series of technical white papers for cybersecurity company, generating 1000+ qualified leads.',
+          description: 'Created a series of technical white papers for a cybersecurity company, generating 1000+ qualified leads.',
           results: ['1000+ qualified leads', '40% conversion rate', 'Industry thought leadership'],
           tags: ['Technical Writing', 'White Papers', 'Cybersecurity', 'Lead Generation']
       },
