@@ -1000,162 +1000,172 @@ select.form-control {
 }
 
 /* Experience Section */
-.experience-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--space-24);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+#gantt-chart-container {
+    width: 100%;
+    margin: 0 auto;
+    opacity: 0; /* Initially hidden for scroll animation */
+    transition: opacity 0.8s ease-out;
 }
-.experience-grid.is-faded .experience-tile {
-  opacity: 0;
-  transform: scale(0.9);
+
+#gantt-chart-container.visible {
+    opacity: 1;
 }
-.experience-tile {
-  padding: var(--space-24);
-  cursor: pointer;
-  transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, opacity 0.5s ease;
+
+.gantt-timeline {
+    display: flex;
+    justify-content: space-between;
+    padding: 0 0 10px 30%; /* Align with bars, left padding = label width */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 20px;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
 }
-.tile-period {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-16);
+
+.gantt-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    position: relative;
 }
-.tile-title {
-  font-size: var(--font-size-xl);
-  margin-bottom: var(--space-8);
+
+.gantt-label {
+    width: 30%;
+    padding-right: 20px;
+    flex-shrink: 0;
+    text-align: right;
+    transition: color 0.3s ease;
 }
-.tile-company {
-  font-size: var(--font-size-base);
-  color: var(--color-accent-teal);
-  font-weight: 500;
-  margin-bottom: var(--space-20);
+
+.gantt-label h3 {
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: var(--color-text);
+    transition: color 0.3s ease;
 }
-.tile-cta {
-  font-weight: 500;
-  color: var(--color-electric-blue);
-  opacity: 0;
-  transition: opacity 0.3s ease;
+
+.gantt-label p {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
 }
-.experience-tile:hover .tile-cta {
-  opacity: 1;
+
+.gantt-bar-area {
+    width: 70%;
+    position: relative;
 }
-.experience-viewer {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: rgba(10, 10, 20, 0.5);
-  backdrop-filter: blur(8px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.4s ease;
+
+.gantt-bar {
+    height: 28px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, var(--color-accent-teal) 0%, var(--color-electric-blue) 100%);
+    position: relative;
+    overflow: hidden;
+    transform: scaleX(0);
+    transform-origin: left;
 }
-.experience-viewer.is-visible { pointer-events: auto; }
-.experience-viewer.is-active { opacity: 1; }
-.experience-viewer__card {
-  width: 100%;
-  max-width: 750px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: var(--space-32);
-  background: rgba(26, 26, 46, 0.9);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: var(--radius-lg);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5);
-  transform-origin: top left;
+
+#gantt-chart-container.visible .gantt-bar {
+    animation: drawBar 1s cubic-bezier(0.645, 0.045, 0.355, 1) forwards;
 }
-.experience-viewer__card.is-animating {
-  transition: transform 0.5s cubic-bezier(0.645, 0.045, 0.355, 1);
+
+.gantt-bar.present::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    height: 100%;
+    width: 20px;
+    background: linear-gradient(90deg, rgba(0, 212, 255, 0), rgba(0, 212, 255, 0.8));
+    box-shadow: 0 0 12px 4px rgba(0, 212, 255, 0.5);
+    filter: blur(3px);
+    border-radius: 0 6px 6px 0;
 }
-.experience-viewer__close {
-  position: absolute;
-  top: 20px; right: 20px;
-  width: 40px; height: 40px;
-  font-size: 2rem;
-  color: white;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  line-height: 0;
-  transition: transform 0.2s ease, background 0.2s ease;
+
+.gantt-tooltip {
+    position: absolute;
+    bottom: 110%; /* Position above the bar */
+    left: 10px;
+    background: rgba(36, 36, 60, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 15px;
+    border-radius: var(--radius-lg);
+    width: 350px;
+    z-index: 10;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s var(--animation-curve);
+    backdrop-filter: blur(5px);
 }
-.experience-viewer__close:hover {
-  transform: rotate(90deg);
-  background: rgba(255, 0, 0, 0.5);
+
+.gantt-bar-area:hover .gantt-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
 }
-.experience-viewer__card .experience-period {
-  font-size: var(--font-size-sm);
-  color: var(--color-accent-teal);
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: var(--space-12);
+
+.gantt-row:hover .gantt-label h3 {
+    color: var(--color-electric-blue);
 }
-.experience-viewer__card .experience-title {
-  font-size: var(--font-size-2xl);
-  color: var(--color-electric-blue);
-  margin-bottom: var(--space-8);
+
+.tooltip-period {
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--color-accent-teal);
+    margin-bottom: 12px;
 }
-.experience-viewer__card .experience-company {
-  font-size: var(--font-size-lg);
-  color: var(--color-text-secondary);
+
+.tooltip-achievements {
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
-.experience-viewer__card .experience-highlights {
-  padding: var(--space-20);
-  margin: var(--space-24) 0;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: var(--radius-base);
+
+.tooltip-achievements li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: var(--font-size-sm);
 }
-.experience-viewer__card .highlights-title {
-  font-size: var(--font-size-base);
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  margin-bottom: var(--space-16);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+
+@keyframes drawBar {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
 }
-.experience-viewer__card .highlights-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--space-16);
-}
-.experience-viewer__card .achievement-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-12);
-  font-weight: 500;
-}
-.experience-viewer__card .achievement-icon {
-  font-size: 1.5rem;
-  flex-shrink: 0;
-  width: 40px; height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(0, 212, 255, 0.15) 0%, transparent 70%);
-}
-.experience-viewer__card .experience-details ul { list-style: none; padding: 0; margin: 0; }
-.experience-viewer__card .experience-details ul li {
-  position: relative;
-  padding-left: 20px;
-  margin-bottom: var(--space-12);
-  color: var(--color-text-secondary);
-}
-.experience-viewer__card .experience-details ul li::before {
-  content: '';
-  position: absolute;
-  left: 0; top: 5px;
-  width: 3px; height: 14px;
-  background-color: var(--color-electric-blue);
-  border-radius: 2px;
-  opacity: 0.5;
+
+/* Responsive adjustments for Gantt Chart */
+@media (max-width: 768px) {
+    .gantt-row {
+        flex-direction: column;
+        align-items: flex-start;
+        background: rgba(255, 255, 255, 0.03);
+        padding: 15px;
+        border-radius: var(--radius-md);
+        margin-bottom: 20px;
+    }
+    .gantt-label {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 15px;
+        padding-right: 0;
+    }
+    .gantt-bar-area {
+        width: 100%;
+        height: 28px;
+    }
+    .gantt-timeline {
+        padding: 0 0 10px 0; /* Remove left padding on mobile */
+    }
+    .gantt-tooltip {
+       width: 90%;
+       left: 50%;
+       transform: translateX(-50%) translateY(10px);
+    }
+    .gantt-bar-area:hover .gantt-tooltip {
+       transform: translateX(-50%) translateY(0);
+    }
 }
 
 /* Contact Section */

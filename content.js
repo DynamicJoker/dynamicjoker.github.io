@@ -146,10 +146,10 @@ const siteContent = {
   ], 
   testimonials: [
       {
-          name: 'John Doe',
-          title: 'CEO',
-          company: 'Tech Solutions Inc.',
-          quote: 'Jerry has an unparalleled ability to translate complex technical concepts into compelling marketing messages. Our lead generation increased by 300% thanks to his content strategy.',
+          name: 'Alex Glawion',
+          title: 'CEO and Founder',
+          company: 'CG Director',
+          quote: 'Jerry is an exceptional technical writer, editor, and content marketer. He\'s been instrumental in our traffic growth from a few thousands to over 2M a month within 18 months!',
           image: 'https://i.pravatar.cc/100?u=john-doe'
       },
       {
@@ -169,7 +169,7 @@ const siteContent = {
       {
           name: 'Emily White',
           title: 'Head of Content',
-          company: 'CyberGuard',
+          company: 'Redlegg',
           quote: 'The series of white papers Jerry created for us not only generated a significant number of qualified leads but also positioned us as thought leaders in the cybersecurity space.',
           image: 'https://i.pravatar.cc/100?u=emily-white'
       },

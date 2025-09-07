@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeLogoCarousel();
     initializeExpandableHighlights();
     initializeParallaxEffect();
-    initializeExpandableGrid();
+    generateGanttChart();
     preloadCriticalResources();
     console.log('Jerry James Portfolio initialized successfully! 🚀');
 });
@@ -551,71 +551,81 @@ function initializeExpandableHighlights() {
     document.addEventListener('click', () => container.querySelector('.expanded')?.classList.remove('expanded'));
 }
 
-function initializeExpandableGrid() {
-    const grid = document.getElementById('experience-grid');
-    const viewer = document.getElementById('experience-viewer');
-    const viewerCard = document.getElementById('experience-viewer-card');
-    const closeButton = document.getElementById('experience-viewer-close');
-    if (!grid || !viewer) return;
+function generateGanttChart() {
+    const container = document.getElementById('gantt-chart-container');
+    if (!container) return;
 
-    const sortedExperience = [...siteContent.experience].sort((a, b) => new Date(b.period.split(' - ')[1] || new Date()) - new Date(a.period.split(' - ')[1] || new Date()));
-    grid.innerHTML = sortedExperience.map(job => `
-        <div class="experience-tile card-base" data-id="${job.id}">
-            <div class="tile-period">${job.period}</div>
-            <h3 class="tile-title">${job.title}</h3>
-            <div class="tile-company">${job.company}</div>
-            <div class="tile-cta">View Details &rarr;</div>
-        </div>
-    `).join('');
+    // 1. Prepare data and find date range
+    const customOrder = ['consulting', 'cgdirector', 'msi', 'webdev', 'dota2'];
+    const jobs = siteContent.experience.map(job => {
+        const [startStr, endStr] = job.period.split(' - ');
+        const [startMonth, startYear] = startStr.split('/');
+        const startDate = new Date(`${startYear}-${startMonth}-01`);
 
-    let lastClickedTile = null;
-
-    const closeViewer = () => {
-        if (!lastClickedTile) return;
-        const startRect = lastClickedTile.getBoundingClientRect();
-        const endRect = viewerCard.getBoundingClientRect();
-        viewerCard.style.transform = `translate(${startRect.left - endRect.left}px, ${startRect.top - endRect.top}px) scale(${startRect.width / endRect.width}, ${startRect.height / endRect.height})`;
-        grid.classList.remove('is-faded');
-        viewer.classList.remove('is-active');
-        viewerCard.addEventListener('transitionend', () => {
-            viewer.classList.remove('is-visible');
-            viewerCard.classList.remove('is-animating');
-        }, { once: true });
-    };
-
-    grid.addEventListener('click', (e) => {
-        const tile = e.target.closest('.experience-tile');
-        if (!tile) return;
-        lastClickedTile = tile;
-        const jobData = siteContent.experience.find(j => j.id === tile.dataset.id);
-        viewerCard.innerHTML = `
-            <div class="experience-header">
-                <div class="experience-period">${jobData.period}</div>
-                <h3 class="experience-title">${jobData.title}</h3>
-                <div class="experience-company">${jobData.company} &middot; ${jobData.location}</div>
-            </div>
-            <div class="experience-highlights">
-                <h4 class="highlights-title">Key Highlights</h4>
-                <div class="highlights-grid">${jobData.achievements.map(a => `<div class="achievement-item"><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></div>`).join('')}</div>
-            </div>
-            <div class="experience-details"><ul>${jobData.responsibilities.map(r => `<li>${r}</li>`).join('')}</ul></div>
-        `;
-        
-        const startRect = tile.getBoundingClientRect();
-        viewer.classList.add('is-visible');
-        const endRect = viewerCard.getBoundingClientRect();
-        viewerCard.style.transform = `translate(${startRect.left - endRect.left}px, ${startRect.top - endRect.top}px) scale(${startRect.width / endRect.width}, ${startRect.height / endRect.height})`;
-        
-        requestAnimationFrame(() => {
-            grid.classList.add('is-faded');
-            viewer.classList.add('is-active');
-            viewerCard.classList.add('is-animating');
-            viewerCard.style.transform = 'none';
-        });
+        let endDate;
+        if (endStr.toLowerCase() === 'present') {
+            endDate = new Date();
+        } else {
+            const [endMonth, endYear] = endStr.split('/');
+            endDate = new Date(`${endYear}-${endMonth}-01`);
+        }
+        return { ...job, startDate, endDate };
+    }).sort((a, b) => {
+        return customOrder.indexOf(a.id) - customOrder.indexOf(b.id);
     });
 
-    closeButton.addEventListener('click', closeViewer);
-    viewer.addEventListener('click', (e) => e.target === viewer && closeViewer());
+    const firstDate = new Date(Math.min(...jobs.map(j => j.startDate)));
+    const lastDate = new Date(Math.max(...jobs.map(j => j.endDate)));
+
+    const totalDuration = lastDate.getTime() - firstDate.getTime();
+
+    // 2. Create Timeline Axis
+    let timelineHTML = '<div class="gantt-timeline">';
+    const startYear = firstDate.getFullYear();
+    const endYear = lastDate.getFullYear();
+    for (let year = startYear; year <= endYear; year++) {
+        timelineHTML += `<span>${year}</span>`;
+    }
+    timelineHTML += '</div>';
+
+    // 3. Create Chart Rows
+    let rowsHTML = jobs.map((job, index) => {
+        const offset = (job.startDate.getTime() - firstDate.getTime()) / totalDuration * 100;
+        const width = (job.endDate.getTime() - job.startDate.getTime()) / totalDuration * 100;
+        const isPresent = job.period.toLowerCase().includes('present');
+
+        const achievementsList = job.achievements.map(a => `<li><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></li>`).join('');
+
+        return `
+            <div class="gantt-row">
+                <div class="gantt-label">
+                    <h3>${job.title}</h3>
+                    <p>${job.company}</p>
+                </div>
+                <div class="gantt-bar-area">
+                    <div class="gantt-bar ${isPresent ? 'present' : ''}" style="margin-left: ${offset}%; width: ${width}%; animation-delay: ${index * 100}ms;"></div>
+                    <div class="gantt-tooltip">
+                        <div class="tooltip-period">${job.period}</div>
+                        <ul class="tooltip-achievements">${achievementsList}</ul>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = timelineHTML + rowsHTML;
+
+    // 4. Add scroll-triggered animation
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                container.classList.add('visible');
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.3 });
+
+    observer.observe(container);
 }
 
 function preloadCriticalResources() {
