@@ -93,8 +93,8 @@ function updateUIOnScroll(scrollY) {
     }
 }
 
-// 3. Add the single, efficient event listener
-window.addEventListener('scroll', handleScroll);
+// 3. Adding single, efficient event listener
+window.addEventListener('scroll', handleScroll, { passive: true });
 
 document.addEventListener('DOMContentLoaded', () => {
     initializeLoadingScreen();
@@ -108,7 +108,6 @@ document.addEventListener('DOMContentLoaded', () => {
     generatePortfolioItems();
     initializePortfolioFilters();
     initializeContactForm();
-    initializeSmoothScrolling();
     updateYearsExperience();
     initializeHeroVisuals();
     initializeScrambleAnimation();
@@ -306,21 +305,34 @@ function initializeHeroVisuals() {
 }
 
 function initializePortfolioFilters() {
-    const filterButtons = document.querySelectorAll('.filter-btn');
+    const filterContainer = document.querySelector('.portfolio-filters');
     const portfolioItems = document.querySelectorAll('.portfolio-item');
     
-    filterButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const filter = button.dataset.filter;
-            filterButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-            
-            portfolioItems.forEach(item => {
-                const isVisible = filter === 'all' || item.dataset.category === filter;
-                item.classList.toggle('hidden', !isVisible);
-                item.style.opacity = isVisible ? '1' : '0';
-                item.style.transform = isVisible ? 'scale(1)' : 'scale(0.8)';
-            });
+    // Safety check in case the container doesn't exist
+    if (!filterContainer) return;
+
+    // Add a single click listener to the parent container
+    filterContainer.addEventListener('click', (event) => {
+        // Find the button that was actually clicked, even if the user clicks an inner element
+        const clickedButton = event.target.closest('.filter-btn');
+
+        // If the click was not on a button, do nothing
+        if (!clickedButton) return;
+
+        // Get all filter buttons to manage the 'active' class
+        const filterButtons = filterContainer.querySelectorAll('.filter-btn');
+        const filter = clickedButton.dataset.filter;
+        
+        // Update the active state
+        filterButtons.forEach(btn => btn.classList.remove('active'));
+        clickedButton.classList.add('active');
+        
+        // Apply the filter logic to each portfolio item
+        portfolioItems.forEach(item => {
+            const isVisible = filter === 'all' || item.dataset.category === filter;
+            item.classList.toggle('hidden', !isVisible);
+            item.style.opacity = isVisible ? '1' : '0';
+            item.style.transform = isVisible ? 'scale(1)' : 'scale(0.8)';
         });
     });
 }
@@ -348,21 +360,6 @@ function initializeContactForm() {
             submitButton.textContent = originalText;
             submitButton.disabled = false;
         }, 2000);
-    });
-}
-
-function initializeSmoothScrolling() {
-    document.querySelectorAll('a[href^="#"]').forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-            const targetSection = document.querySelector(link.getAttribute('href'));
-            if (targetSection) {
-                window.scrollTo({
-                    top: targetSection.offsetTop - config.navbar.height,
-                    behavior: 'smooth'
-                });
-            }
-        });
     });
 }
 

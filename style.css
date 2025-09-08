@@ -122,6 +122,7 @@ html {
   background-color: var(--color-background);
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+  scroll-behavior: smooth;
 }
 body {
   margin: 0;
@@ -603,7 +604,9 @@ select.form-control {
   margin: 0 auto;
   border-radius: 2px;
 }
-
+section[id] {
+  scroll-margin-top: 80px;
+}
 /* About Section */
 .about-content {
   max-width: 900px;
