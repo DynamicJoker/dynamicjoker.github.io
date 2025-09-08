@@ -30,7 +30,7 @@
   --color-info-rgb: 98, 108, 113;
 
   /* Typography */
-  --font-family-base: "FKGroteskNeue", "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-base: "Geist", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-family-mono: "Berkeley Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   --font-size-xs: 11px; --font-size-sm: 12px; --font-size-base: 14px; --font-size-md: 14px; --font-size-lg: 16px; --font-size-xl: 18px; --font-size-2xl: 20px; --font-size-3xl: 24px; --font-size-4xl: 30px;
   --font-weight-normal: 400; --font-weight-medium: 500; --font-weight-semibold: 550; --font-weight-bold: 600;
@@ -799,12 +799,14 @@ select.form-control {
 
 /* --- CONSOLIDATED HOVER EFFECT for Cards --- */
 .service-card:hover,
-.skill-category:hover,
-.experience-tile:hover {
+.skill-category:hover {
   transform: translateY(-5px);
+  border-color: var(--color-electric-blue); 
 }
+
 .portfolio-card:hover {
   transform: translateY(-10px);
+  border-color: var(--color-electric-blue); /* Make border consistent */
   box-shadow: 0 20px 40px rgba(0, 212, 255, 0.1);
 }
 

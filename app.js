@@ -42,6 +42,60 @@ const config = {
     }
 };
 
+/* Render function to render a list of items into a container
+ * @param {string} containerId - The ID of the DOM element to render into.
+ * @param {Array} dataArray - The array of data to render.
+ * @param {Function} templateFn - A function that takes one item from the array and returns an HTML string.
+ */
+function renderContent(containerId, dataArray, templateFn) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        console.warn(`renderContent: Container with ID '${containerId}' not found.`);
+        return;
+    }
+    container.innerHTML = dataArray.map(templateFn).join('');
+}
+
+// --- Consolidated Scroll Handler for Performance ---
+let lastKnownScrollPosition = 0;
+let ticking = false;
+
+// 1. Function to read scroll position and call update functions
+function handleScroll() {
+    lastKnownScrollPosition = window.pageYOffset;
+
+    if (!ticking) {
+        window.requestAnimationFrame(() => {
+            updateUIOnScroll(lastKnownScrollPosition);
+            ticking = false;
+        });
+
+        ticking = true;
+    }
+}
+
+// 2. All visual updates triggered by scroll happen here
+function updateUIOnScroll(scrollY) {
+    const navbar = document.getElementById('navbar');
+    const heroBackground = document.querySelector('.hero-background');
+
+    // Logic from: initializeNavigation()
+    if (navbar) {
+        navbar.classList.toggle('scrolled', scrollY > 10);
+    }
+    
+    // Logic from: the old throttled listener
+    updateActiveNavLink(); 
+
+    // Logic from: initializeParallaxEffect()
+    if (heroBackground) {
+        heroBackground.style.transform = `translateY(${scrollY * -0.5}px)`;
+    }
+}
+
+// 3. Add the single, efficient event listener
+window.addEventListener('scroll', handleScroll);
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeLoadingScreen();
     initializeNavigation();
@@ -63,7 +117,6 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeExpandableHighlights();
     initializeParallaxEffect();
     generateGanttChart();
-    preloadCriticalResources();
     console.log('Jerry James Portfolio initialized successfully! 🚀');
 });
 
@@ -98,17 +151,10 @@ function initializeNavigation() {
         });
     }
 
-    if (navbar) {
-        const updateNavbarOnScroll = () => {
-            if (window.pageYOffset > 10) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
-            updateActiveNavLink();
-        };
-        window.addEventListener('scroll', updateNavbarOnScroll);
-        updateNavbarOnScroll();
+        if (navbar) {
+        // Set initial state on load
+        navbar.classList.toggle('scrolled', window.pageYOffset > 10);
+        updateActiveNavLink();
     }
 }
 
@@ -396,16 +442,6 @@ function showNotification(message, type = 'info') {
 function initializeParallaxEffect() {
     const heroBackground = document.querySelector('.hero-background');
     if (!heroBackground) return;
-    let isTicking = false;
-    document.addEventListener('scroll', () => {
-        if (!isTicking) {
-            window.requestAnimationFrame(() => {
-                heroBackground.style.transform = `translateY(${window.pageYOffset * -0.5}px)`;
-                isTicking = false;
-            });
-            isTicking = true;
-        }
-    });
 }
 
 const throttle = (func, limit) => {
@@ -420,7 +456,6 @@ const throttle = (func, limit) => {
 };
 
 window.addEventListener('resize', cacheSectionPositions);
-window.addEventListener('scroll', throttle(updateActiveNavLink, 100));
 document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && document.getElementById('nav-menu').classList.contains('active')) {
         document.getElementById('hamburger').classList.remove('active');
@@ -429,9 +464,7 @@ document.addEventListener('keydown', (e) => {
 });
 
 function generateSkills() {
-    const skillsGrid = document.getElementById('skills-grid');
-    if (!skillsGrid) return;
-    skillsGrid.innerHTML = siteContent.skills.map(category => `
+    renderContent('skills-grid', siteContent.skills, category => `
         <div class="skill-category card-base">
             <h3 class="skill-category-title">${category.category}</h3>
             <div class="${category.type === 'pane' ? 'skill-pane-container' : 'skill-tags'}">
@@ -440,19 +473,17 @@ function generateSkills() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `);
 }
 
 function generateServices() {
-    const servicesGrid = document.getElementById('services-grid');
-    if (!servicesGrid) return;
-    servicesGrid.innerHTML = siteContent.services.map(service => `
+    renderContent('services-grid', siteContent.services, service => `
         <div class="service-card card-base">
             <div class="service-icon">${service.icon}</div>
             <h3 class="service-title">${service.title}</h3>
             <p class="service-description">${service.description}</p>
         </div>
-    `).join('');
+    `);
 }
 
 function generateTestimonialColumns() {
@@ -472,7 +503,7 @@ function generateTestimonialColumns() {
                 ${column.map(testimonial => `
                     <div class="testimonial-card">
                         <div class="testimonial-header">
-                            <img class="testimonial-image" src="${testimonial.image}" alt="${testimonial.name}">
+                            <img class="testimonial-image" loading="lazy" width="100" height="100" src="${testimonial.image}" alt="${testimonial.name}">
                             <div class="testimonial-author-info">
                                 <p class="testimonial-author">${testimonial.name}</p>
                                 <p class="testimonial-title">${testimonial.title}, ${testimonial.company}</p>
@@ -500,9 +531,7 @@ function initializeInfiniteScroller() {
 }
 
 function generatePortfolioItems() {
-    const portfolioGrid = document.getElementById('portfolio-grid');
-    if (!portfolioGrid) return;
-    portfolioGrid.innerHTML = siteContent.portfolio.map(item => `
+    renderContent('portfolio-grid', siteContent.portfolio, item => `
         <div class="portfolio-item" data-category="${item.category}">
             <div class="portfolio-card card-base">
                 <div class="portfolio-header">
@@ -518,7 +547,7 @@ function generatePortfolioItems() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `);
 }
 
 function initializeLogoCarousel() {
@@ -534,21 +563,49 @@ function initializeLogoCarousel() {
 function initializeExpandableHighlights() {
     const container = document.querySelector('.about-highlights');
     if (!container) return;
-    
-    container.querySelectorAll('.highlight-item').forEach(item => {
-        const handler = (event) => {
-            if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) return;
-            event.preventDefault();
-            event.stopPropagation();
-            const isExpanded = item.classList.contains('expanded');
-            container.querySelector('.expanded')?.classList.remove('expanded');
-            if (!isExpanded) item.classList.add('expanded');
-        };
-        item.addEventListener('click', handler);
-        item.addEventListener('keydown', handler);
-    });
 
-    document.addEventListener('click', () => container.querySelector('.expanded')?.classList.remove('expanded'));
+    const handleInteraction = (event) => {
+        // Find the parent highlight-item that was clicked or activated by key
+        const highlightItem = event.target.closest('.highlight-item');
+        
+        // Exit if the interaction was not on a highlight item
+        if (!highlightItem) return;
+
+        // Ensure only Enter or Space keys trigger the action
+        if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) {
+            return;
+        }
+        
+        event.preventDefault();
+
+        const currentlyExpanded = container.querySelector('.expanded');
+
+        // Close any other item that might already be open
+        if (currentlyExpanded && currentlyExpanded !== highlightItem) {
+            currentlyExpanded.classList.remove('expanded');
+        }
+        
+        // Toggle the active state of the interacted item
+        highlightItem.classList.toggle('expanded');
+    };
+    
+    // Attach a single listener to the parent container for all clicks and key events
+    container.addEventListener('click', handleInteraction);
+    container.addEventListener('keydown', handleInteraction);
+
+    // Add a listener to the document to handle clicks outside the component
+    document.addEventListener('click', (event) => {
+        // Ignore clicks within the component itself; the container's listener handles those.
+        if (container.contains(event.target)) {
+            return;
+        }
+        
+        // If the click was outside, find and close any expanded item.
+        const currentlyExpanded = container.querySelector('.expanded');
+        if (currentlyExpanded) {
+            currentlyExpanded.classList.remove('expanded');
+        }
+    });
 }
 
 function generateGanttChart() {
@@ -626,14 +683,4 @@ function generateGanttChart() {
     }, { threshold: 0.3 });
 
     observer.observe(container);
-}
-
-function preloadCriticalResources() {
-    const link = document.createElement('link');
-    link.rel = 'preload';
-    link.href = 'https://r2cdn.perplexity.ai/fonts/FKGroteskNeue.woff2';
-    link.as = 'font';
-    link.type = 'font/woff2';
-    link.crossOrigin = 'anonymous';
-    document.head.appendChild(link);
 }
