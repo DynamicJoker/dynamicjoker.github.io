@@ -13,13 +13,27 @@ const config = {
         delayBetweenTexts: 2000,
         initialDelay: 2500
     },
-    heroBlob: {
-        radius: 300,
-        maxStretch: 120,
-        points: 100,
-        noiseSpeed: 0.003,
-        noiseAmount: 0.15,
-        mouseFollowSpeed: 0.08
+    heroVisuals: {
+    radius: 300,
+    maxStretch: 200,
+    points: 45,
+    noiseFrequency: 3,
+    noiseSpeed: 0.009,
+    baseNoise: 0.15,
+    mouseFollowSpeed: 0.03,
+    velocityIntensity: 0.003,
+    colors: {
+            target: { h: 195, s: 100, l: 50 }, // The target electric blue for motion
+            // The orb will cycle through these colors in order.
+            colorStops: [
+                { h: 195, s: 100, l: 55 }, // Electric Blue
+                { h: 250, s: 90, l: 60 },  // Vibrant Purple
+                { h: 330, s: 95, l: 60 },  // Hot Pink / Magenta
+                { h: 280, s: 90, l: 60 },  // Deep Violet
+            ],
+            // How fast it transitions from one color to the next (lower is slower)
+            transitionSpeed: 0.001
+        }
     },
     navbar: {
         height: 70 // The height of the navbar in pixels
@@ -245,17 +259,29 @@ function initializeScrollAnimations() {
     document.querySelectorAll('.section').forEach(section => observer.observe(section));
 }
 
+// --- REBUILT: initializeHeroVisuals for the new "Vibrant Core Orb" ---
 function initializeHeroVisuals() {
-    const svgPath = document.getElementById('hero-blob-path');
+    const corePath = document.getElementById('hero-blob-path');
+    const glowPath = document.getElementById('hero-blob-glow-path');
+    const blobGroup = document.getElementById('blob-group');
+    const gradientStop = document.getElementById('gradient-stop-1');
     const heroSection = document.getElementById('hero');
-    if (!svgPath || !heroSection) return;
 
-    const { radius, maxStretch, points, noiseSpeed, noiseAmount, mouseFollowSpeed } = config.heroBlob;
+    if (!corePath || !glowPath || !blobGroup || !heroSection || !gradientStop) return;
+
+    // Destructure properties from the config
+    const { radius, maxStretch, points, noiseFrequency, noiseSpeed, baseNoise, mouseFollowSpeed, velocityIntensity, colors } = config.heroVisuals;
+    
     let time = 0;
+    let colorTime = 0; // Use a separate timer for color transitions
     let rect = heroSection.getBoundingClientRect();
-    let centerX = rect.width / 2, centerY = rect.height / 2;
+    let centerX = rect.width / 2;
+    let centerY = rect.height / 2;
+
     let mouseX = centerX, mouseY = centerY;
+    let lastMouseX = centerX, lastMouseY = centerY;
     let virtualMouseX = centerX, virtualMouseY = centerY;
+    let mouseVelocity = 0;
 
     const lerp = (start, end, amount) => start * (1 - amount) + end * amount;
 
@@ -269,21 +295,62 @@ function initializeHeroVisuals() {
     }
 
     function animate() {
+        // Increment both timers
         time += noiseSpeed;
+        colorTime += colors.transitionSpeed;
+
+        const dx = mouseX - lastMouseX;
+        const dy = mouseY - lastMouseY;
+        const currentVelocity = Math.min(Math.hypot(dx, dy), 100);
+        mouseVelocity = lerp(mouseVelocity, currentVelocity, 0.1);
+        lastMouseX = mouseX;
+        lastMouseY = mouseY;
+
         virtualMouseX = lerp(virtualMouseX, mouseX, mouseFollowSpeed);
         virtualMouseY = lerp(virtualMouseY, mouseY, mouseFollowSpeed);
+
+        // --- NEW COLOR CYCLING LOGIC ---
+        const { target, colorStops } = colors;
+        
+        // 1. Determine the current and next colors in the sequence
+        const colorIndex = Math.floor(colorTime) % colorStops.length;
+        const nextColorIndex = (colorIndex + 1) % colorStops.length;
+        const currentColor = colorStops[colorIndex];
+        const nextColor = colorStops[nextColorIndex];
+
+        // 2. Calculate the progress (0 to 1) between the two colors
+        const progress = colorTime % 1;
+
+        // 3. Interpolate HSL values for the idle color
+        const idleHue = lerp(currentColor.h, nextColor.h, progress);
+        const idleSaturation = lerp(currentColor.s, nextColor.s, progress);
+        const idleLightness = lerp(currentColor.l, nextColor.l, progress);
+
+        // 4. Blend from the idle color to the target blue based on mouse velocity
+        const velocityFactor = Math.min(mouseVelocity / 60, 1);
+        const finalHue = lerp(idleHue, target.h, velocityFactor);
+        const finalSaturation = lerp(idleSaturation, target.s, velocityFactor);
+        const finalLightness = lerp(idleLightness, target.l, velocityFactor);
+        
+        gradientStop.setAttribute('stop-color', `hsl(${finalHue}, ${finalSaturation}%, ${finalLightness}%)`);
+
         const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
         const pullIntensity = Math.min(Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY) / (rect.width / 3), 1);
+        const dynamicNoiseAmount = baseNoise + mouseVelocity * velocityIntensity;
+        const dynamicMaxStretch = maxStretch + mouseVelocity * 0.5;
         
         const generatedPoints = Array.from({ length: points }, (_, i) => {
             const angle = (i / points) * Math.PI * 2;
-            const noiseFactor = 1 + noiseAmount * Math.sin(time + i * 2);
-            const stretch = pullIntensity * maxStretch * (Math.cos(angle - mouseAngle) + 1) / 2;
+            const noiseFactor = 1 + dynamicNoiseAmount * Math.sin(time + angle * noiseFrequency);
+            const stretch = pullIntensity * dynamicMaxStretch * (Math.cos(angle - mouseAngle) + 1) / 2;
             const finalRadius = (radius + stretch) * noiseFactor;
             return { x: Math.cos(angle) * finalRadius, y: Math.sin(angle) * finalRadius };
         });
 
-        svgPath.setAttribute('d', createBlobPath(generatedPoints));
+        const pathData = createBlobPath(generatedPoints);
+        corePath.setAttribute('d', pathData);
+        glowPath.setAttribute('d', pathData);
+
         requestAnimationFrame(animate);
     }
 
@@ -297,10 +364,10 @@ function initializeHeroVisuals() {
         rect = heroSection.getBoundingClientRect(); 
         centerX = rect.width / 2; centerY = rect.height / 2;
         mouseX = virtualMouseX = centerX; mouseY = virtualMouseY = centerY;
-        svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
+        blobGroup.style.transform = `translate(${centerX}px, ${centerY}px)`;
     });
 
-    svgPath.style.transform = `translate(${centerX}px, ${centerY}px)`;
+    blobGroup.style.transform = `translate(${centerX}px, ${centerY}px)`;
     animate();
 }
 

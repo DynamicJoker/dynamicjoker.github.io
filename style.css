@@ -486,8 +486,15 @@ select.form-control {
   pointer-events: none;
   z-index: 1;
 }
+
+#hero-blob-glow-path {
+  filter: blur(70px); 
+  transform: scale(1.05);
+  transform-origin: center center;
+}
+
 #hero-blob-path {
-  fill: rgba(0, 108, 204, 0.3);
+  fill: rgba(43, 43, 43, 0.28);
 }
 .hero-name {
   font-size: clamp(3rem, 8vw, 6rem);
