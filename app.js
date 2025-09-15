@@ -59,7 +59,7 @@ const config = {
         }
     }
 };
-
+let navLinks = [];
 /* Render function to render a list of items into a container
  * @param {string} containerId - The ID of the DOM element to render into.
  * @param {Array} dataArray - The array of data to render.
@@ -151,7 +151,7 @@ function initializeLoadingScreen() {
 function initializeNavigation() {
     const hamburger = document.getElementById('hamburger');
     const navMenu = document.getElementById('nav-menu');
-    const navLinks = document.querySelectorAll('.nav-link');
+    navLinks = document.querySelectorAll('.nav-link');
     const navbar = document.getElementById('navbar');
 
     if (hamburger && navMenu) {
@@ -263,15 +263,14 @@ function updateActiveNavLink() {
         }
     }
 
-    document.querySelectorAll('.nav-link').forEach(link => {
+    navLinks.forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === `#${currentSectionId}`);
     });
 }
 
 function updateNavGlow() {
     const navMenu = document.getElementById('nav-menu');
-    const activeLink = document.querySelector('.nav-link.active');
-
+    const activeLink = Array.from(navLinks).find(link => link.classList.contains('active'));
     if (activeLink && navMenu) {
         navMenu.style.setProperty('--glow-left', `${activeLink.offsetLeft}px`);
         navMenu.style.setProperty('--glow-width', `${activeLink.offsetWidth}px`);
