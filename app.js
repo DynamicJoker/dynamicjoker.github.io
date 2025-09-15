@@ -5,13 +5,13 @@ const config = {
     notificationDuration: 5000,
     scrambleAnimation: {
         texts: [
-            'Technical Marketing Strategy',
-            'B2B & B2C Narratives',
-            'Inbound Marketing Campaigns',
-            'Content Marketing Wizard'
-        ],
-        delayBetweenTexts: 2000,
-        initialDelay: 2500
+                    'Technical Marketing Strategy',
+                    'B2B & B2C Narratives',
+                    'Inbound Marketing Campaigns',
+                    'Content Marketing Wizard'
+                ],
+                delayBetweenTexts: 2000,
+                initialDelay: 2500
     },
     heroVisuals: {
     radius: 300,
@@ -36,7 +36,11 @@ const config = {
         }
     },
     navbar: {
-        height: 70 // The height of the navbar in pixels
+        height: 70, // The height of the navbar in pixels
+        scrollThreshold: 10 // Scroll threshold to change navbar style
+    },
+    scroll: { // New property
+    spyOffset: -100 // For determining the active navigation link
     },
     timeline: {
         layout: {
@@ -95,11 +99,12 @@ function updateUIOnScroll(scrollY) {
 
     // Logic from: initializeNavigation()
     if (navbar) {
-        navbar.classList.toggle('scrolled', scrollY > 10);
+        navbar.classList.toggle('scrolled', scrollY > config.navbar.scrollThreshold);
     }
     
     // Logic from: the old throttled listener
-    updateActiveNavLink(); 
+    updateActiveNavLink();
+    updateNavGlow(); 
 
     // Logic from: initializeParallaxEffect()
     if (heroBackground) {
@@ -113,13 +118,13 @@ window.addEventListener('scroll', handleScroll, { passive: true });
 document.addEventListener('DOMContentLoaded', () => {
     initializeLoadingScreen();
     initializeNavigation();
-    cacheSectionPositions();
-    initializeScrollAnimations();
     generateSkills();
     generateServices();
     generateTestimonialColumns();
     initializeInfiniteScroller();
     generatePortfolioItems();
+    generateGanttChart();
+    initializeScrollAnimations();
     initializePortfolioFilters();
     initializeContactForm();
     updateYearsExperience();
@@ -128,8 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeSmartGlow();
     initializeLogoCarousel();
     initializeExpandableHighlights();
-    initializeParallaxEffect();
-    generateGanttChart();
+    cacheSectionPositions();
     console.log('Jerry James Portfolio initialized successfully! 🚀');
 });
 
@@ -155,19 +159,26 @@ function initializeNavigation() {
             hamburger.classList.toggle('active');
             navMenu.classList.toggle('active');
         });
-
-        navLinks.forEach(link => {
-            link.addEventListener('click', () => {
+    }
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // Immediately update the active link on click
+            navLinks.forEach(navLink => navLink.classList.remove('active'));
+            link.classList.add('active');
+            updateNavGlow();
+            
+            // Close the mobile menu if it's open
+            if (hamburger && navMenu) {
                 hamburger.classList.remove('active');
                 navMenu.classList.remove('active');
-            });
+            }
         });
-    }
-
-        if (navbar) {
+    });
+    if (navbar) {
         // Set initial state on load
-        navbar.classList.toggle('scrolled', window.pageYOffset > 10);
+        navbar.classList.toggle('scrolled', window.pageYOffset > config.navbar.scrollThreshold); // Use config value
         updateActiveNavLink();
+        updateNavGlow();
     }
 }
 
@@ -227,7 +238,7 @@ let sectionData = [];
 function cacheSectionPositions() {
     sectionData = Array.from(document.querySelectorAll('section[id]')).map(section => ({
         id: section.getAttribute('id'),
-        top: section.offsetTop - 100,
+        top: section.offsetTop + config.scroll.spyOffset,
         height: section.offsetHeight
     }));
 }
@@ -235,15 +246,40 @@ function cacheSectionPositions() {
 function updateActiveNavLink() {
     const scrollY = window.scrollY;
     let currentSectionId = '';
-    for (const section of sectionData) {
-        if (scrollY >= section.top && scrollY < section.top + section.height) {
-            currentSectionId = section.id;
-            break;
+
+    // Check if the user has scrolled to the bottom of the page.
+    const atBottom = (window.innerHeight + scrollY) >= document.documentElement.scrollHeight - 5;
+
+    if (atBottom) {
+        // If at the bottom, set the active section to the last one.
+        currentSectionId = sectionData[sectionData.length - 1].id;
+    } else {
+        // Otherwise, use the existing logic for all other sections.
+        for (const section of sectionData) {
+            if (scrollY >= section.top && scrollY < section.top + section.height) {
+                currentSectionId = section.id;
+                break;
+            }
         }
     }
+
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.toggle('active', link.getAttribute('href') === `#${currentSectionId}`);
     });
+}
+
+function updateNavGlow() {
+    const navMenu = document.getElementById('nav-menu');
+    const activeLink = document.querySelector('.nav-link.active');
+
+    if (activeLink && navMenu) {
+        navMenu.style.setProperty('--glow-left', `${activeLink.offsetLeft}px`);
+        navMenu.style.setProperty('--glow-width', `${activeLink.offsetWidth}px`);
+        navMenu.style.setProperty('--glow-opacity', '1');
+    } else if (navMenu) {
+        // Hide the glow if no link is active
+        navMenu.style.setProperty('--glow-opacity', '0');
+    }
 }
 
 function initializeScrollAnimations() {
@@ -487,37 +523,28 @@ function updateYearsExperience() {
 
 function showNotification(message, type = 'info') {
     document.querySelectorAll('.notification').forEach(n => n.remove());
-    
+
     const notification = document.createElement('div');
     notification.className = `notification notification--${type}`;
-    notification.innerHTML = `<div class="notification-content"><span class="notification-message">${message}</span><button class="notification-close">&times;</button></div>`;
-    notification.style.cssText = `position:fixed;top:100px;right:20px;background:${type==='success'?'rgba(20,184,166,0.95)':'rgba(239,68,68,0.95)'};color:white;padding:16px 20px;border-radius:8px;box-shadow:0 10px 30px rgba(0,0,0,0.2);z-index:10000;transform:translateX(100%);transition:transform .3s ease;backdrop-filter:blur(10px);`;
+    notification.innerHTML = `<div class="notification-content"><span class="notification-message">${message}</span><button class="notification-close" aria-label="Close">&times;</button></div>`;
+
     document.body.appendChild(notification);
-    setTimeout(() => notification.style.transform = 'translateX(0)', 100);
+
+    // Use requestAnimationFrame to ensure the transition is applied correctly
+    requestAnimationFrame(() => {
+        notification.classList.add('visible');
+    });
 
     const close = () => {
-        notification.style.transform = 'translateX(100%)';
-        setTimeout(() => notification.remove(), 300);
+        notification.classList.remove('visible');
+        // Wait for the animation to finish before removing the element
+        notification.addEventListener('transitionend', () => notification.remove(), { once: true });
     };
+
     notification.querySelector('.notification-close').addEventListener('click', close);
     setTimeout(close, config.notificationDuration);
 }
 
-function initializeParallaxEffect() {
-    const heroBackground = document.querySelector('.hero-background');
-    if (!heroBackground) return;
-}
-
-const throttle = (func, limit) => {
-    let inThrottle;
-    return function() {
-        if (!inThrottle) {
-            func.apply(this, arguments);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-};
 
 window.addEventListener('resize', cacheSectionPositions);
 document.addEventListener('keydown', (e) => {
@@ -677,7 +704,6 @@ function generateGanttChart() {
     if (!container) return;
 
     // 1. Prepare data and find date range
-    const customOrder = ['consulting', 'cgdirector', 'msi', 'webdev', 'dota2'];
     const jobs = siteContent.experience.map(job => {
         const [startStr, endStr] = job.period.split(' - ');
         const [startMonth, startYear] = startStr.split('/');
@@ -692,7 +718,7 @@ function generateGanttChart() {
         }
         return { ...job, startDate, endDate };
     }).sort((a, b) => {
-        return customOrder.indexOf(a.id) - customOrder.indexOf(b.id);
+        return a.sortOrder - b.sortOrder;
     });
 
     const firstDate = new Date(Math.min(...jobs.map(j => j.startDate)));

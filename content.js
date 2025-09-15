@@ -1,56 +1,56 @@
 const siteContent = {
     // Experience data
     experience: [
-      {
+        {
           id: 'consulting',
           period: '10/2015 - Present',
+          sortOrder: 1,
           title: 'Technology Content Specialist | Editor',
           company: 'Jerry James (Consulting)',
           location: 'Bangalore, India',
           responsibilities: ['Founded a consulting firm for clients in the tech and finance industries.', 'Specialized in PC Hardware, B2B/B2C Networking, Cybersecurity, and Cloud Computing.'],
-          achievements: [{ icon: '🏆', text: 'Created over <b>1,000+</b> compelling content pieces.' }],
-          coords: { x: 85, y: 50 }
-      },
-      {
+          achievements: [{ icon: '🏆', text: 'Created over <b>1,000+</b> compelling content pieces.' }],      
+        },
+        {
           id: 'msi',
           period: '05/2018 - Present',
+          sortOrder: 3,
           title: 'Freelance Technical Content Developer | Consultant',
           company: 'MSI (Micro-Star Int\'l)',
           location: 'Remote, Taiwan',
           responsibilities: ['Translate technical specs into effective marketing materials.', 'Strategize content marketing for new product launches.', 'Develop a distinct brand voice for MSI\'s business product lineup.'],
           achievements: [{ icon: '🌐', text: 'Managed content for <b>50+</b> landing pages with <b>50M+</b> views.' }, { icon: '✍️', text: 'Authored <b>100+</b> and edited <b>400+</b> content pieces.' }],
-          coords: { x: 65, y: 20 }
-      },
-      {
+        },
+        {
           id: 'cgdirector',
           period: '07/2019 - 06/2025',
+          sortOrder: 2,
           title: 'Head of PC Hardware | Technical Editor',
           company: 'CGDirector',
           location: 'Remote, Germany',
           responsibilities: ['Oversaw the hardware section, including content strategy and quality control.', 'Managed and edited work from a team of writers to ensure quality standards.'],
           achievements: [{ icon: '📈', text: 'Edited and published over <b>200+</b> technical articles.' }],
-          coords: { x: 75, y: 80 }
-      },
-      {
+        },
+        {
           id: 'webdev',
           period: '07/2014 - 08/2015',
+          sortOrder: 4,
           title: 'Freelance Web Developer',
           company: 'Self-Employed',
           location: 'Remote, Worldwide',
           responsibilities: ['Provided freelance web development, focusing on design changes, maintenance, and bug fixing.'],
           achievements: [{ icon: '🚀', text: 'Handled creation and updates of <b>REST APIs</b> using Node.js.' }],
-          coords: { x: 35, y: 50 }
-      },
-      {
+        },
+        {
           id: 'dota2',
           period: '10/2012 - 10/2015',
+          sortOrder: 5,
           title: 'Administrator and Community Manager',
           company: 'Dota2Traders',
           location: 'Remote, US',
           responsibilities: ['Managed website and community administration for a forum.', 'Collaborated with influencers and Esports players for publicity campaigns.'],
           achievements: [{ icon: '👥', text: 'Grew and managed a community forum of over <b>10,000+</b> members.' }],
-          coords: { x: 10, y: 50 }
-      }
+        }
   ],
 
   // Portfolio data
