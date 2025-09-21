@@ -41,22 +41,6 @@ const config = {
     },
     scroll: { // New property
     spyOffset: -100 // For determining the active navigation link
-    },
-    timeline: {
-        layout: {
-            topPadding: 40,
-            verticalMargin: 40
-        },
-        scroll: {
-            navbarOffset: 80
-        },
-        animation: {
-            fadeInThreshold: 0.1,
-            highlightRootMargin: "-40% 0px -55% 0px"
-        },
-        performance: {
-            throttleLimit: 10
-        }
     }
 };
 let navLinks = [];
