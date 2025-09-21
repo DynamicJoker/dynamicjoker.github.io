@@ -285,8 +285,9 @@ function initializeHeroVisuals() {
     const blobGroup = document.getElementById('blob-group');
     const gradientStop = document.getElementById('gradient-stop-1');
     const heroSection = document.getElementById('hero');
+    const neonCircle = document.querySelector('.neon-circle');
 
-    if (!corePath || !glowPath || !blobGroup || !heroSection || !gradientStop) return;
+    if (!corePath || !glowPath || !blobGroup || !heroSection || !gradientStop || !neonCircle) return;
 
     // Destructure properties from the config
     const { radius, maxStretch, points, noiseFrequency, noiseSpeed, baseNoise, mouseFollowSpeed, velocityIntensity, colors } = config.heroVisuals;
@@ -351,7 +352,10 @@ function initializeHeroVisuals() {
         const finalSaturation = lerp(idleSaturation, target.s, velocityFactor);
         const finalLightness = lerp(idleLightness, target.l, velocityFactor);
         
-        gradientStop.setAttribute('stop-color', `hsl(${finalHue}, ${finalSaturation}%, ${finalLightness}%)`);
+        const currentBlobColor = `hsl(${finalHue}, ${finalSaturation}%, ${finalLightness}%)`;
+
+        gradientStop.setAttribute('stop-color', currentBlobColor);
+        neonCircle.style.stroke = currentBlobColor;
 
         const mouseAngle = Math.atan2(virtualMouseY - centerY, virtualMouseX - centerX);
         const pullIntensity = Math.min(Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY) / (rect.width / 3), 1);

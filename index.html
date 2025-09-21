@@ -63,6 +63,26 @@
             </g>
         </svg>
         <div class="hero-content">
+            <div class="neon-frame-container">
+                <img src="https://media.licdn.com/dms/image/v2/D5603AQEUhyjoCfiYQw/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1703645590071?e=1761177600&v=beta&t=E82Wj0ZMJxB6Xwj0-I_wD7GXDjmtjI4IOEeLKBDLzR8" alt="Portrait of Jerry James" class="neon-frame-image">
+                
+                <!-- This SVG will draw the glowing circle -->
+                <svg class="neon-circle-svg" viewBox="0 0 102 102" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <!-- This filter creates the "glow" effect -->
+                        <filter id="neon-glow">
+                            <feGaussianBlur stdDeviation="1.5" result="coloredBlur"></feGaussianBlur>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"></feMergeNode>
+                                <feMergeNode in="SourceGraphic"></feMergeNode>
+                            </feMerge>
+                        </filter>
+                    </defs>
+                    <!-- The circle that gets animated -->
+                    <circle class="neon-circle" cx="51" cy="51" r="49"></circle>
+                </svg>
+            </div>
+            <!-- The Text Content -->
             <div class="hero-text">
                 <h1 class="hero-name">Jerry James</h1>
                 <div class="hero-title">

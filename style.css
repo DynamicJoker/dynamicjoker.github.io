@@ -630,6 +630,90 @@ select.form-control {
   to { opacity: 1; transform: translateY(0); }
 }
 
+
+/* 2. Styles for the Portrait and its Container */
+.neon-frame-container {
+    width: 280px;
+    height: 280px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0; /* Prevents the container from shrinking */
+}
+
+.neon-frame-image {
+    width: 90%;
+    height: 90%;
+    object-fit: cover;
+    border-radius: 50%; /* This makes the image circular */
+    filter: grayscale(30%);
+    animation: fadeInUp 1s 0.2s ease-out both; /* Use existing fade-in animation */
+}
+
+/* 3. Styles for the SVG Circle Animation */
+.neon-circle-svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg); /* Starts the drawing animation from the top */
+}
+
+.neon-circle {
+    fill: none;
+    stroke-width: 2;
+    /* Circumference = 2 * PI * r = 2 * 3.14159 * 49 ≈ 308 */
+    stroke-dasharray: 308;
+    stroke-dashoffset: 308; /* Start with the circle "undrawn" */
+    animation: draw-circle 1.5s 0.5s ease-out forwards;
+    filter: url(#neon-glow); /* Applies the glow effect from the SVG <defs> */
+}
+
+@keyframes draw-circle {
+    to {
+        stroke-dashoffset: 0; /* Animates the stroke into view */
+    }
+}
+
+@media (min-width: 820px) {
+    .hero-content {
+        display: flex;
+        /* This reverses the visual order to keep the image on the right */
+        flex-direction: row-reverse; 
+        align-items: center;
+        justify-content: space-between;
+        gap: 80px;
+        max-width: 1100px;
+    }
+    .hero-text {
+        text-align: left;
+        flex: 1;
+    }
+    .hero-buttons, .hero-title {
+        justify-content: flex-start;
+    }
+}
+
+/* 2. Updated Mobile Styles */
+@media (max-width: 819px) {
+    .hero-content {
+        /* This now creates the natural stacking order you want */
+        flex-direction: column; 
+        text-align: center;
+        gap: 40px;
+    }
+    .hero-buttons, .hero-title {
+        justify-content: center;
+    }
+    .neon-frame-container {
+        width: 220px;
+        height: 220px;
+    }
+}
+
+
 /* Sections */
 .section {
   padding: 100px 0;
