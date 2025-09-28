@@ -323,6 +323,73 @@
             </div>
         </div>
     </footer>
+    <!-- ======================================================================= -->
+    <!-- TEMPLATES for Dynamic Content Injection -->
+    <!-- ======================================================================= -->
+
+    <template id="skill-category-template">
+        <div class="skill-category card-base">
+            <h3 class="skill-category-title"></h3>
+            <!-- The specific layout for tags will be injected here by JavaScript -->
+        </div>
+    </template>
+
+    <template id="service-card-template">
+        <div class="service-card card-base">
+            <div class="service-icon"></div>
+            <h3 class="service-title"></h3>
+            <p class="service-description"></p>
+        </div>
+    </template>
+
+    <template id="testimonial-card-template">
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+                <img class="testimonial-image" loading="lazy" width="50" height="50">
+                <div class="testimonial-author-info">
+                    <p class="testimonial-author"></p>
+                    <p class="testimonial-title"></p>
+                </div>
+            </div>
+            <p class="testimonial-quote"></p>
+        </div>
+    </template>
+
+    <template id="portfolio-item-template">
+        <div class="portfolio-item" data-category="">
+            <div class="portfolio-card card-base">
+                <div class="portfolio-header">
+                    <h3 class="portfolio-title"></h3>
+                    <span class="portfolio-category"></span>
+                </div>
+                <p class="portfolio-description"></p>
+                <div class="portfolio-results">
+                    <!-- Result items will be inserted here -->
+                </div>
+                <div class="portfolio-tags">
+                    <!-- Tags will be inserted here -->
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <template id="gantt-row-template">
+        <div class="gantt-row">
+            <div class="gantt-label">
+                <h3></h3>
+                <p></p>
+            </div>
+            <div class="gantt-bar-area">
+                <div class="gantt-bar"></div>
+                <div class="gantt-tooltip">
+                    <div class="tooltip-period"></div>
+                    <ul class="tooltip-achievements">
+                        <!-- Achievements will be inserted here -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </template>
     <script src="content.js" defer></script>
     <script src="app.js" defer></script>
 </body>

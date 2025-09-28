@@ -40,23 +40,33 @@ const config = {
         scrollThreshold: 10 // Scroll threshold to change navbar style
     },
     scroll: { // New property
-    spyOffset: -100 // For determining the active navigation link
+        spyOffset: -100 // For determining the active navigation link
+    },
+    testimonials: {
+        columns: 3,
+        scrollSpeedMin: 80, // seconds
+        scrollSpeedMax: 120  // seconds
+    },
+    logoCarousel: {
+        interval: 3000 // milliseconds
+    },
+    contactForm: {
+        fakeSubmissionDelay: 2000 // milliseconds
+    },
+    experience: {
+        ganttChart: {
+            animationDelayIncrement: 100, // in milliseconds
+            intersectionThreshold: 0.3
+        }, 
+        startYear: 2014
+    },
+    scrollAnimations: {
+        intersectionThreshold: 0.1,
+        intersectionRootMargin: '0px 0px -50px 0px'
     }
 };
 let navLinks = [];
-/* Render function to render a list of items into a container
- * @param {string} containerId - The ID of the DOM element to render into.
- * @param {Array} dataArray - The array of data to render.
- * @param {Function} templateFn - A function that takes one item from the array and returns an HTML string.
- */
-function renderContent(containerId, dataArray, templateFn) {
-    const container = document.getElementById(containerId);
-    if (!container) {
-        console.warn(`renderContent: Container with ID '${containerId}' not found.`);
-        return;
-    }
-    container.innerHTML = dataArray.map(templateFn).join('');
-}
+
 
 // --- Consolidated Scroll Handler for Performance ---
 let lastKnownScrollPosition = 0;
@@ -273,7 +283,8 @@ function initializeScrollAnimations() {
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+        }, { threshold: config.scrollAnimations.intersectionThreshold, rootMargin: config.scrollAnimations.intersectionRootMargin }
+);
     
     document.querySelectorAll('.section').forEach(section => observer.observe(section));
 }
@@ -449,7 +460,7 @@ function initializeContactForm() {
             form.reset();
             submitButton.textContent = originalText;
             submitButton.disabled = false;
-        }, 2000);
+        }, config.contactForm.fakeSubmissionDelay);
     });
 }
 
@@ -505,7 +516,7 @@ function initializeScrambleAnimation() {
 
 function updateYearsExperience() {
     const el = document.getElementById('years-experience');
-    if(el) el.textContent = new Date().getFullYear() - 2014;
+    if(el) el.textContent = new Date().getFullYear() - config.experience.startYear;
 }
 
 function showNotification(message, type = 'info') {
@@ -542,57 +553,97 @@ document.addEventListener('keydown', (e) => {
 });
 
 function generateSkills() {
-    renderContent('skills-grid', siteContent.skills, category => `
-        <div class="skill-category card-base">
-            <h3 class="skill-category-title">${category.category}</h3>
-            <div class="${category.type === 'pane' ? 'skill-pane-container' : 'skill-tags'}">
-                <div class="${category.type !== 'pane' ? '' : 'skill-tags'}">
-                    ${category.tags.map(tag => `<span class="skill-tag">${tag}</span>`).join('')}
-                </div>
-            </div>
-        </div>
-    `);
+    const gridContainer = document.getElementById('skills-grid');
+    const template = document.getElementById('skill-category-template');
+    if (!gridContainer || !template) return;
+
+    // Clear any existing content to prevent duplication
+    gridContainer.innerHTML = ''; 
+
+    siteContent.skills.forEach(category => {
+        const clone = template.content.cloneNode(true);
+        const categoryCard = clone.querySelector('.skill-category');
+        clone.querySelector('.skill-category-title').textContent = category.category;
+
+        // Create the necessary divs that will contain the tags
+        const outerWrapper = document.createElement('div');
+        const innerTagHolder = document.createElement('div');
+
+        // Apply the correct CSS classes based on the category type
+        if (category.type === 'pane') {
+            // Recreate the structure for the scrollable pane:
+            // <div class="skill-pane-container"> <div class="skill-tags"> ... </div> </div>
+            outerWrapper.className = 'skill-pane-container';
+            innerTagHolder.className = 'skill-tags';
+        } else {
+            // Recreate the structure for a standard list:
+            // <div class="skill-tags"> <div class=""> ... </div> </div>
+            outerWrapper.className = 'skill-tags';
+            // The inner div for standard skills intentionally has no class
+        }
+
+        // Create and append all the skill tags into the inner holder
+        category.tags.forEach(tagText => {
+            const tagElement = document.createElement('span');
+            tagElement.className = 'skill-tag';
+            tagElement.textContent = tagText;
+            innerTagHolder.appendChild(tagElement);
+        });
+
+        // Assemble the final structure and append it to the card
+        outerWrapper.appendChild(innerTagHolder);
+        categoryCard.appendChild(outerWrapper);
+        
+        gridContainer.appendChild(clone);
+    });
 }
 
 function generateServices() {
-    renderContent('services-grid', siteContent.services, service => `
-        <div class="service-card card-base">
-            <div class="service-icon">${service.icon}</div>
-            <h3 class="service-title">${service.title}</h3>
-            <p class="service-description">${service.description}</p>
-        </div>
-    `);
+    const container = document.getElementById('services-grid');
+    const template = document.getElementById('service-card-template');
+    if (!container || !template) return;
+
+    siteContent.services.forEach(service => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.service-icon').textContent = service.icon;
+        clone.querySelector('.service-title').textContent = service.title;
+        clone.querySelector('.service-description').textContent = service.description;
+        container.appendChild(clone);
+    });
 }
 
 function generateTestimonialColumns() {
     const container = document.getElementById('testimonials-container');
-    if (!container) return;
+    const template = document.getElementById('testimonial-card-template');
+    if (!container || !template) return;
 
-    const numColumns = 3;
-    const columns = Array.from({ length: numColumns }, () => []);
-    
+    const numColumns = config.testimonials.columns;
+    const columnsData = Array.from({ length: numColumns }, () => []);
     siteContent.testimonials.forEach((testimonial, index) => {
-        columns[index % numColumns].push(testimonial);
+        columnsData[index % numColumns].push(testimonial);
     });
 
-    container.innerHTML = columns.map(column => `
-        <div class="testimonials-scroller-column">
-            <div class="testimonials-scroller-inner">
-                ${column.map(testimonial => `
-                    <div class="testimonial-card">
-                        <div class="testimonial-header">
-                            <img class="testimonial-image" loading="lazy" width="100" height="100" src="${testimonial.image}" alt="${testimonial.name}">
-                            <div class="testimonial-author-info">
-                                <p class="testimonial-author">${testimonial.name}</p>
-                                <p class="testimonial-title">${testimonial.title}, ${testimonial.company}</p>
-                            </div>
-                        </div>
-                        <p class="testimonial-quote">"${testimonial.quote}"</p>
-                    </div>
-                `).join('')}
-            </div>
-        </div>
-    `).join('');
+    columnsData.forEach(testimonials => {
+        const columnEl = document.createElement('div');
+        columnEl.className = 'testimonials-scroller-column';
+        
+        const innerEl = document.createElement('div');
+        innerEl.className = 'testimonials-scroller-inner';
+
+        testimonials.forEach(testimonial => {
+            const clone = template.content.cloneNode(true);
+            const image = clone.querySelector('.testimonial-image');
+            image.src = testimonial.image;
+            image.alt = testimonial.name;
+
+            clone.querySelector('.testimonial-author').textContent = testimonial.name;
+            clone.querySelector('.testimonial-title').textContent = `${testimonial.title}, ${testimonial.company}`;
+            clone.querySelector('.testimonial-quote').textContent = `"${testimonial.quote}"`;
+            innerEl.appendChild(clone);
+        });
+        columnEl.appendChild(innerEl);
+        container.appendChild(columnEl);
+    });
 }
 
 function initializeInfiniteScroller() {
@@ -604,28 +655,41 @@ function initializeInfiniteScroller() {
             duplicatedItem.setAttribute("aria-hidden", true);
             scrollerInner.appendChild(duplicatedItem);
         });
-        scrollerInner.style.setProperty('--scroll-duration', `${Math.floor(Math.random() * 41) + 80}s`);
+        const durationRange = config.testimonials.scrollSpeedMax - config.testimonials.scrollSpeedMin;
+        const randomDuration = Math.floor(Math.random() * durationRange) + config.testimonials.scrollSpeedMin;
+        scrollerInner.style.setProperty('--scroll-duration', `${randomDuration}s`);
     });
 }
 
 function generatePortfolioItems() {
-    renderContent('portfolio-grid', siteContent.portfolio, item => `
-        <div class="portfolio-item" data-category="${item.category}">
-            <div class="portfolio-card card-base">
-                <div class="portfolio-header">
-                    <h3 class="portfolio-title">${item.title}</h3>
-                    <span class="portfolio-category">${item.category.toUpperCase()}</span>
-                </div>
-                <p class="portfolio-description">${item.description}</p>
-                <div class="portfolio-results">
-                    ${item.results.map(result => `<div class="result-item">${result}</div>`).join('')}
-                </div>
-                <div class="portfolio-tags">
-                    ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                </div>
-            </div>
-        </div>
-    `);
+    const container = document.getElementById('portfolio-grid');
+    const template = document.getElementById('portfolio-item-template');
+    if (!container || !template) return;
+
+    siteContent.portfolio.forEach(item => {
+        const clone = template.content.cloneNode(true);
+        clone.querySelector('.portfolio-item').dataset.category = item.category;
+        clone.querySelector('.portfolio-title').textContent = item.title;
+        clone.querySelector('.portfolio-category').textContent = item.category.toUpperCase();
+        clone.querySelector('.portfolio-description').textContent = item.description;
+
+        const resultsContainer = clone.querySelector('.portfolio-results');
+        item.results.forEach(resultText => {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'result-item';
+            resultDiv.textContent = resultText;
+            resultsContainer.appendChild(resultDiv);
+        });
+
+        const tagsContainer = clone.querySelector('.portfolio-tags');
+        item.tags.forEach(tagText => {
+            const tagSpan = document.createElement('span');
+            tagSpan.className = 'tag';
+            tagSpan.textContent = tagText;
+            tagsContainer.appendChild(tagSpan);
+        });
+        container.appendChild(clone);
+    });
 }
 
 function initializeLogoCarousel() {
@@ -635,7 +699,7 @@ function initializeLogoCarousel() {
     setInterval(() => {
         logos.forEach((logo, index) => logo.classList.toggle('active', index === currentIndex));
         currentIndex = (currentIndex + 1) % logos.length;
-    }, 3000);
+    }, config.logoCarousel.interval);
 }
 
 function initializeExpandableHighlights() {
@@ -688,32 +752,22 @@ function initializeExpandableHighlights() {
 
 function generateGanttChart() {
     const container = document.getElementById('gantt-chart-container');
+    const template = document.getElementById('gantt-row-template');
     if (!container) return;
 
-    // 1. Prepare data and find date range
     const jobs = siteContent.experience.map(job => {
         const [startStr, endStr] = job.period.split(' - ');
         const [startMonth, startYear] = startStr.split('/');
         const startDate = new Date(`${startYear}-${startMonth}-01`);
-
-        let endDate;
-        if (endStr.toLowerCase() === 'present') {
-            endDate = new Date();
-        } else {
-            const [endMonth, endYear] = endStr.split('/');
-            endDate = new Date(`${endYear}-${endMonth}-01`);
-        }
+        let endDate = (endStr.toLowerCase() === 'present') ? new Date() : new Date(`${endStr.split('/')[1]}-${endStr.split('/')[0]}-01`);
         return { ...job, startDate, endDate };
-    }).sort((a, b) => {
-        return a.sortOrder - b.sortOrder;
-    });
+    }).sort((a, b) => a.sortOrder - b.sortOrder);
 
     const firstDate = new Date(Math.min(...jobs.map(j => j.startDate)));
     const lastDate = new Date(Math.max(...jobs.map(j => j.endDate)));
-
     const totalDuration = lastDate.getTime() - firstDate.getTime();
 
-    // 2. Create Timeline Axis
+    // Generate Timeline Axis (HTML string is fine here as it's not complex)
     let timelineHTML = '<div class="gantt-timeline">';
     const startYear = firstDate.getFullYear();
     const endYear = lastDate.getFullYear();
@@ -721,35 +775,41 @@ function generateGanttChart() {
         timelineHTML += `<span>${year}</span>`;
     }
     timelineHTML += '</div>';
+    container.innerHTML = timelineHTML;
 
-    // 3. Create Chart Rows
-    let rowsHTML = jobs.map((job, index) => {
+    // Use a document fragment for efficient row appending
+    const fragment = document.createDocumentFragment();
+
+    jobs.forEach((job, index) => {
+        const clone = template.content.cloneNode(true);
         const offset = (job.startDate.getTime() - firstDate.getTime()) / totalDuration * 100;
         const width = (job.endDate.getTime() - job.startDate.getTime()) / totalDuration * 100;
-        const isPresent = job.period.toLowerCase().includes('present');
 
-        const achievementsList = job.achievements.map(a => `<li><span class="achievement-icon">${a.icon}</span><span>${a.text}</span></li>`).join('');
+        clone.querySelector('.gantt-label h3').textContent = job.title;
+        clone.querySelector('.gantt-label p').textContent = job.company;
+        clone.querySelector('.tooltip-period').textContent = job.period;
 
-        return `
-            <div class="gantt-row">
-                <div class="gantt-label">
-                    <h3>${job.title}</h3>
-                    <p>${job.company}</p>
-                </div>
-                <div class="gantt-bar-area">
-                    <div class="gantt-bar ${isPresent ? 'present' : ''}" style="margin-left: ${offset}%; width: ${width}%; animation-delay: ${index * 100}ms;"></div>
-                    <div class="gantt-tooltip">
-                        <div class="tooltip-period">${job.period}</div>
-                        <ul class="tooltip-achievements">${achievementsList}</ul>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
+        const bar = clone.querySelector('.gantt-bar');
+        bar.style.marginLeft = `${offset}%`;
+        bar.style.width = `${width}%`;
+        bar.style.animationDelay = `${index * config.experience.ganttChart.animationDelayIncrement}ms`;
+        if (job.period.toLowerCase().includes('present')) {
+            bar.classList.add('present');
+        }
 
-    container.innerHTML = timelineHTML + rowsHTML;
+        const achievementsList = clone.querySelector('.tooltip-achievements');
+        job.achievements.forEach(a => {
+            const li = document.createElement('li');
+            li.innerHTML = `<span class="achievement-icon">${a.icon}</span><span>${a.text}</span>`;
+            achievementsList.appendChild(li);
+        });
+        
+        fragment.appendChild(clone);
+    });
 
-    // 4. Add scroll-triggered animation
+    container.appendChild(fragment);
+
+    // Add scroll-triggered animation
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -757,7 +817,6 @@ function generateGanttChart() {
                 observer.unobserve(entry.target);
             }
         });
-    }, { threshold: 0.3 });
-
+    }, { threshold: config.experience.ganttChart.intersectionThreshold });
     observer.observe(container);
 }
