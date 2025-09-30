@@ -522,13 +522,7 @@ select.form-control {
   overflow: hidden;
   background: var(--color-dark-primary);
 }
-.hero-content {
-  position: relative;
-  z-index: 2;
-  text-align: center;
-  max-width: 800px;
-  padding: 0 var(--space-16);
-}
+
 .hero-background {
   position: absolute;
   top: 0; left: 0;
@@ -630,88 +624,88 @@ select.form-control {
   to { opacity: 1; transform: translateY(0); }
 }
 
+.hero-content {
+    position: relative;
+    z-index: 2;
+    padding: 0 16px; 
+    max-width: 800px; /* Constrains the width of the text on large screens */
+    margin: 0 auto;
+    /* This creates the stacked, centered column layout */
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    text-align: center;
+    gap: 40px; /* Vertical space between portrait and text */
+    transition: gap 0.4s ease-in-out;
+}
 
-/* 2. Styles for the Portrait and its Container */
+.hero-text {
+    width: 100%;
+}
+
+.hero-title, 
+.hero-buttons {
+    justify-content: center;
+}
+
+/* --- 2. Portrait Component Styles --- */
+/* These rules ensure the portrait and its neon circle are styled correctly. */
 .neon-frame-container {
-    width: 280px;
-    height: 280px;
+    /* We set a fixed size to prevent stretching */
+    width: 240px;
+    height: 240px;
     position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0; /* Prevents the container from shrinking */
+    flex-shrink: 0;
+    transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
 }
 
 .neon-frame-image {
     width: 90%;
     height: 90%;
     object-fit: cover;
-    border-radius: 50%; /* This makes the image circular */
+    border-radius: 50%; /* This will now work correctly */
     filter: grayscale(30%);
-    animation: fadeInUp 1s 0.2s ease-out both; /* Use existing fade-in animation */
 }
 
-/* 3. Styles for the SVG Circle Animation */
 .neon-circle-svg {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    transform: rotate(-90deg); /* Starts the drawing animation from the top */
+    transform: rotate(-90deg);
 }
 
 .neon-circle {
     fill: none;
     stroke-width: 2;
-    /* Circumference = 2 * PI * r = 2 * 3.14159 * 49 ≈ 308 */
     stroke-dasharray: 308;
-    stroke-dashoffset: 308; /* Start with the circle "undrawn" */
+    stroke-dashoffset: 308;
     animation: draw-circle 1.5s 0.5s ease-out forwards;
-    filter: url(#neon-glow); /* Applies the glow effect from the SVG <defs> */
+    filter: url(#neon-glow);
 }
 
-@keyframes draw-circle {
-    to {
-        stroke-dashoffset: 0; /* Animates the stroke into view */
-    }
-}
+@keyframes draw-circle { to { stroke-dashoffset: 0; } }
 
+
+/* --- 3. Desktop Scaling Adjustments --- */
+/* We no longer change the layout, we just scale things up for a better look. */
 @media (min-width: 820px) {
+    .neon-frame-container {
+        /* Make the portrait larger on desktop for more impact */
+        width: 300px;
+        height: 300px;
+    }
+    
     .hero-content {
-        display: flex;
-        /* This reverses the visual order to keep the image on the right */
-        flex-direction: row-reverse; 
-        align-items: center;
-        justify-content: space-between;
-        gap: 80px;
-        max-width: 1100px;
-    }
-    .hero-text {
-        text-align: left;
-        flex: 1;
-    }
-    .hero-buttons, .hero-title {
-        justify-content: flex-start;
+        /* Add a bit more vertical spacing on larger screens */
+        gap: 50px;
     }
 }
 
-/* 2. Updated Mobile Styles */
-@media (max-width: 819px) {
-    .hero-content {
-        /* This now creates the natural stacking order you want */
-        flex-direction: column; 
-        text-align: center;
-        gap: 40px;
-    }
-    .hero-buttons, .hero-title {
-        justify-content: center;
-    }
-    .neon-frame-container {
-        width: 220px;
-        height: 220px;
-    }
-}
 
 
 /* Sections */
@@ -1400,17 +1394,56 @@ section[id] {
   .nav-menu {
     position: fixed;
     top: 70px;
-    left: -100%;
+    left: 0; /* Changed from left: -100% */
     width: 100%;
     height: calc(100vh - 70px);
-    background: rgba(26, 26, 46, 0.98);
-    backdrop-filter: blur(10px);
+    
+    /* New "glass" background that matches the theme */
+    background: rgba(10, 10, 10, 0.8); /* Using your --color-dark-primary */
+    backdrop-filter: blur(12px);
+    
+    /* Center the links vertically and horizontally */
+    display: flex; /* Ensure flex is active */
     flex-direction: column;
-    justify-content: flex-start;
-    padding-top: 60px;
-    transition: left var(--animation-speed) var(--animation-curve);
+    justify-content: center; /* Changed from flex-start */
+    align-items: center;
+    padding-top: 0; /* Removed old padding */
+
+    /* New performant animation: fade and move from top */
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none; /* Prevent interaction when hidden */
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+  .nav-menu.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto; /* Allow interaction when visible */
   }
-  .nav-menu.active { left: 0; }
+  .nav-menu .nav-link {
+      font-size: var(--font-size-2xl); /* Make links larger and easier to tap */
+      padding: var(--space-16) 0;
+      opacity: 0;
+      transform: translateY(-10px);
+      transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+  }
+
+  /* When the menu is active, animate the links into view */
+  .nav-menu.active .nav-link {
+      opacity: 1;
+      transform: translateY(0);
+  }
+
+  /* Staggered animation for each link */
+  .nav-menu.active .nav-link:nth-child(1) { transition-delay: 0.1s; }
+  .nav-menu.active .nav-link:nth-child(2) { transition-delay: 0.15s; }
+  .nav-menu.active .nav-link:nth-child(3) { transition-delay: 0.2s; }
+  .nav-menu.active .nav-link:nth-child(4) { transition-delay: 0.25s; }
+  .nav-menu.active .nav-link:nth-child(5) { transition-delay: 0.3s; }
+  .nav-menu.active .nav-link:nth-child(6) { transition-delay: 0.35s; }
+  .nav-menu.active .nav-link:nth-child(7) { transition-delay: 0.4s; }
+  .nav-menu.active .nav-link:nth-child(8) { transition-delay: 0.45s; }
   .hamburger.active span:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
   .hamburger.active span:nth-child(2) { opacity: 0; }
   .hamburger.active span:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
