@@ -1394,33 +1394,51 @@ section[id] {
   .nav-menu {
     position: fixed;
     top: 70px;
-    left: 0; /* Changed from left: -100% */
+    left: 0;
     width: 100%;
     height: calc(100vh - 70px);
     
-    /* New "glass" background that matches the theme */
-    background: rgba(10, 10, 10, 0.8); /* Using your --color-dark-primary */
-    backdrop-filter: blur(12px);
+    /* Start with the background and filter turned OFF */
+    background: rgba(10, 10, 10, 0); /* Start fully transparent */
+    backdrop-filter: blur(0px); /* Start with no blur */
     
-    /* Center the links vertically and horizontally */
-    display: flex; /* Ensure flex is active */
+    display: flex;
     flex-direction: column;
-    justify-content: center; /* Changed from flex-start */
+    justify-content: center;
     align-items: center;
-    padding-top: 0; /* Removed old padding */
-
-    /* New performant animation: fade and move from top */
+    padding-top: 0;
     opacity: 0;
     transform: translateY(-20px);
-    pointer-events: none; /* Prevent interaction when hidden */
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    pointer-events: none;
+    visibility: hidden;
+
+    /* Add background and backdrop-filter to the transition list */
+    transition: 
+        opacity 0.35s ease-out, 
+        transform 0.35s ease-out, 
+        visibility 0s linear 0.35s,
+        backdrop-filter 0.35s ease-out,
+        background 0.35s ease-out;
 }
 
-  .nav-menu.active {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto; /* Allow interaction when visible */
-  }
+.nav-menu.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    visibility: visible;
+
+    /* Turn the background and filter ON when active */
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(12px);
+
+    /* The reverse transition is defined above, so no change needed here */
+    transition: 
+        opacity 0.35s ease-out, 
+        transform 0.35s ease-out, 
+        visibility 0s linear 0s,
+        backdrop-filter 0.35s ease-out,
+        background 0.35s ease-out;
+}
   .nav-menu .nav-link {
       font-size: var(--font-size-2xl); /* Make links larger and easier to tap */
       padding: var(--space-16) 0;
@@ -1444,6 +1462,8 @@ section[id] {
   .nav-menu.active .nav-link:nth-child(6) { transition-delay: 0.35s; }
   .nav-menu.active .nav-link:nth-child(7) { transition-delay: 0.4s; }
   .nav-menu.active .nav-link:nth-child(8) { transition-delay: 0.45s; }
+
+  
   .hamburger.active span:nth-child(1) { transform: rotate(-45deg) translate(-5px, 6px); }
   .hamburger.active span:nth-child(2) { opacity: 0; }
   .hamburger.active span:nth-child(3) { transform: rotate(45deg) translate(-5px, -6px); }
@@ -1539,3 +1559,43 @@ section[id] {
 .shape-assembler i:nth-child(7) { animation-delay: 0.8s; }
 .shape-assembler i:nth-child(8) { animation-delay: 0.5s; }
 .shape-assembler i:nth-child(9) { animation-delay: 0.7s; }
+
+.section,
+.container {
+    /* We animate the padding change that happens on smaller screens. */
+    transition: padding 0.4s ease-in-out;
+}
+
+/* 2. For the main content grids */
+/* 
+   While we can't easily animate the grid columns themselves, we can
+   smooth out the resizing of the containers that hold them, which
+   gives a much less jarring effect.
+*/
+.skills-grid,
+.services-grid,
+.portfolio-grid,
+.contact-content {
+    transition: all 0.4s ease-in-out;
+}
+
+/* 3. For specific components that resize */
+.filter-btn {
+    /* 
+       This smoothes the font-size and padding change, AND it has the
+       added benefit of making the button's hover effects animate smoothly too.
+    */
+    transition: all 0.3s ease-in-out;
+}
+
+/* 4. For the About Me highlights */
+.highlight-item {
+    /* Smoothes the transition when it stacks vertically */
+    transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease;
+}
+
+/* 5. For the Gantt Chart rows */
+.gantt-row {
+    /* Smoothes the change when it switches from row to column on mobile */
+    transition: padding 0.4s ease-in-out, background 0.4s ease-in-out;
+}
