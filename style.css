@@ -662,6 +662,16 @@ select.form-control {
     transition: width 0.4s ease-in-out, height 0.4s ease-in-out;
 }
 
+@media (max-width: 480px) {
+    .neon-frame-container {
+        width: 180px;
+        height: 180px;
+    }
+    .hero-content {
+        gap: 20px; /* Reduce the gap between portrait and text on mobile */
+    }
+}
+
 .neon-frame-image {
     width: 90%;
     height: 90%;

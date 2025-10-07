@@ -299,6 +299,11 @@ function initializeHeroVisuals() {
     const neonCircle = document.querySelector('.neon-circle');
 
     if (!corePath || !glowPath || !blobGroup || !heroSection || !gradientStop || !neonCircle) return;
+    // Adjust config for smaller screens
+    if (window.innerWidth < 768) {
+        config.heroVisuals.radius = 200; // Original was 300
+        config.heroVisuals.maxStretch = 120; // Original was 200
+    }
 
     // Destructure properties from the config
     const { radius, maxStretch, points, noiseFrequency, noiseSpeed, baseNoise, mouseFollowSpeed, velocityIntensity, colors } = config.heroVisuals;
