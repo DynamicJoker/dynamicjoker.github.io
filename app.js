@@ -5,24 +5,24 @@ const config = {
     notificationDuration: 5000,
     scrambleAnimation: {
         texts: [
-                    'Technical Marketing Strategy',
-                    'B2B & B2C Narratives',
-                    'Inbound Marketing Campaigns',
-                    'Content Marketing Wizard'
-                ],
-                delayBetweenTexts: 2000,
-                initialDelay: 2500
+            'Technical Marketing Strategy',
+            'B2B & B2C Narratives',
+            'Inbound Marketing Campaigns',
+            'Content Marketing Wizard'
+        ],
+        delayBetweenTexts: 2000,
+        initialDelay: 2500
     },
     heroVisuals: {
-    radius: 300,
-    maxStretch: 200,
-    points: 45,
-    noiseFrequency: 3,
-    noiseSpeed: 0.009,
-    baseNoise: 0.15,
-    mouseFollowSpeed: 0.03,
-    velocityIntensity: 0.003,
-    colors: {
+        radius: 300,
+        maxStretch: 200,
+        points: 45,
+        noiseFrequency: 3,
+        noiseSpeed: 0.009,
+        baseNoise: 0.15,
+        mouseFollowSpeed: 0.03,
+        velocityIntensity: 0.003,
+        colors: {
             target: { h: 195, s: 100, l: 50 }, // The target electric blue for motion
             // The orb will cycle through these colors in order.
             colorStops: [
@@ -57,7 +57,7 @@ const config = {
         ganttChart: {
             animationDelayIncrement: 100, // in milliseconds
             intersectionThreshold: 0.3
-        }, 
+        },
         startYear: 2014
     },
     scrollAnimations: {
@@ -95,10 +95,10 @@ function updateUIOnScroll(scrollY) {
     if (navbar) {
         navbar.classList.toggle('scrolled', scrollY > config.navbar.scrollThreshold);
     }
-    
+
     // Logic from: the old throttled listener
     updateActiveNavLink();
-    updateNavGlow(); 
+    updateNavGlow();
 
     // Logic from: initializeParallaxEffect()
     if (heroBackground) {
@@ -160,7 +160,7 @@ function initializeNavigation() {
             navLinks.forEach(navLink => navLink.classList.remove('active'));
             link.classList.add('active');
             updateNavGlow();
-            
+
             // Close the mobile menu if it's open
             if (hamburger && navMenu) {
                 hamburger.classList.remove('active');
@@ -181,7 +181,7 @@ function initializeSmartGlow() {
     if (!navbar) return;
 
     let titleData = [];
-    
+
     function cacheTitlePositions() {
         const titles = document.querySelectorAll('.hero-name, .section-title');
         titleData = Array.from(titles).map(title => {
@@ -199,14 +199,14 @@ function initializeSmartGlow() {
 
     function updateGlow() {
         const scrollY = window.scrollY;
-        
+
         // Fast abort to save performance if no scrolling occurred
         if (scrollY === lastGlowScroll) {
             requestAnimationFrame(updateGlow);
             return;
         }
         lastGlowScroll = scrollY;
-        
+
         const navBottom = scrollY + navbar.offsetHeight;
 
         let prevTitle = null, nextTitle = null;
@@ -214,7 +214,7 @@ function initializeSmartGlow() {
             if (title.top < navBottom) prevTitle = title;
             else { nextTitle = title; break; }
         }
-        
+
         const distToPrev = prevTitle ? navBottom - prevTitle.top : Infinity;
         const distToNext = nextTitle ? nextTitle.top - navBottom : Infinity;
         const activeTitle = distToNext < distToPrev ? nextTitle : prevTitle;
@@ -222,10 +222,10 @@ function initializeSmartGlow() {
 
         let intensity = (activeTitle && closestDist < activationRange) ? 1 - (closestDist / activationRange) : 0;
         intensity = Math.max(0, scrollY < 10 ? 0 : intensity);
-        
+
         const sizeX = baseGlow.size + (peakGlow.size - baseGlow.size) * intensity;
         const opacity = baseGlow.opacity + (peakGlow.opacity - baseGlow.opacity) * intensity;
-        
+
         if (activeTitle) navbar.style.setProperty('--glow-position-x', `${activeTitle.centerX}px`);
         navbar.style.setProperty('--glow-size', `${sizeX}px 5px`);
         navbar.style.setProperty('--glow-color', `rgba(${glowColorRgb}, ${opacity})`);
@@ -293,9 +293,9 @@ function initializeScrollAnimations() {
                 observer.unobserve(entry.target);
             }
         });
-        }, { threshold: config.scrollAnimations.intersectionThreshold, rootMargin: config.scrollAnimations.intersectionRootMargin }
-);
-    
+    }, { threshold: config.scrollAnimations.intersectionThreshold, rootMargin: config.scrollAnimations.intersectionRootMargin }
+    );
+
     document.querySelectorAll('.section').forEach(section => observer.observe(section));
 }
 
@@ -317,7 +317,7 @@ function initializeHeroVisuals() {
 
     // Destructure properties from the config
     const { radius, maxStretch, points, noiseFrequency, noiseSpeed, baseNoise, mouseFollowSpeed, velocityIntensity, colors } = config.heroVisuals;
-    
+
     let time = 0;
     let colorTime = 0; // Use a separate timer for color transitions
     let rect = heroSection.getBoundingClientRect();
@@ -361,7 +361,7 @@ function initializeHeroVisuals() {
 
         // --- NEW COLOR CYCLING LOGIC ---
         const { target, colorStops } = colors;
-        
+
         // 1. Determine the current and next colors in the sequence
         const colorIndex = Math.floor(colorTime) % colorStops.length;
         const nextColorIndex = (colorIndex + 1) % colorStops.length;
@@ -381,7 +381,7 @@ function initializeHeroVisuals() {
         const finalHue = lerp(idleHue, target.h, velocityFactor);
         const finalSaturation = lerp(idleSaturation, target.s, velocityFactor);
         const finalLightness = lerp(idleLightness, target.l, velocityFactor);
-        
+
         const currentBlobColor = `hsl(${finalHue}, ${finalSaturation}%, ${finalLightness}%)`;
 
         gradientStop.setAttribute('stop-color', currentBlobColor);
@@ -391,7 +391,7 @@ function initializeHeroVisuals() {
         const pullIntensity = Math.min(Math.hypot(virtualMouseX - centerX, virtualMouseY - centerY) / (rect.width / 3), 1);
         const dynamicNoiseAmount = baseNoise + mouseVelocity * velocityIntensity;
         const dynamicMaxStretch = maxStretch + mouseVelocity * 0.5;
-        
+
         const generatedPoints = Array.from({ length: points }, (_, i) => {
             const angle = (i / points) * Math.PI * 2;
             const noiseFactor = 1 + dynamicNoiseAmount * Math.sin(time + angle * noiseFrequency);
@@ -413,32 +413,32 @@ function initializeHeroVisuals() {
         mouseY = e.clientY - currentRect.top;
     });
     heroSection.addEventListener('mouseleave', () => { mouseX = centerX; mouseY = centerY; });
-    window.addEventListener('resize', () => { 
-        rect = heroSection.getBoundingClientRect(); 
+    window.addEventListener('resize', () => {
+        rect = heroSection.getBoundingClientRect();
         centerX = rect.width / 2; centerY = rect.height / 2;
         mouseX = virtualMouseX = centerX; mouseY = virtualMouseY = centerY;
         blobGroup.style.transform = `translate(${centerX}px, ${centerY}px)`;
     });
 
     blobGroup.style.transform = `translate(${centerX}px, ${centerY}px)`;
-    
+
     // Check if the hero section is on screen to pause the expensive math loop
     const heroObserver = new IntersectionObserver((entries) => {
         const wasVisible = isHeroVisible;
         isHeroVisible = entries[0].isIntersecting;
         if (isHeroVisible && !wasVisible) {
-            requestAnimationFrame(animate); 
+            requestAnimationFrame(animate);
         }
     });
     heroObserver.observe(heroSection);
-    
+
     requestAnimationFrame(animate);
 }
 
 function initializePortfolioFilters() {
     const filterContainer = document.querySelector('.portfolio-filters');
     const portfolioItems = document.querySelectorAll('.portfolio-item');
-    
+
     // Safety check in case the container doesn't exist
     if (!filterContainer) return;
 
@@ -453,11 +453,11 @@ function initializePortfolioFilters() {
         // Get all filter buttons to manage the 'active' class
         const filterButtons = filterContainer.querySelectorAll('.filter-btn');
         const filter = clickedButton.dataset.filter;
-        
+
         // Update the active state
         filterButtons.forEach(btn => btn.classList.remove('active'));
         clickedButton.classList.add('active');
-        
+
         // Apply the filter logic to each portfolio item
         portfolioItems.forEach(item => {
             const isVisible = filter === 'all' || item.dataset.category === filter;
@@ -471,7 +471,7 @@ function initializePortfolioFilters() {
 function initializeContactForm() {
     const form = document.getElementById('contact-form');
     if (!form) return;
-    
+
     form.addEventListener('submit', (e) => {
         e.preventDefault();
         const formData = new FormData(form);
@@ -479,12 +479,12 @@ function initializeContactForm() {
             showNotification('Please fill in all required fields.', 'error');
             return;
         }
-        
+
         const submitButton = form.querySelector('button[type="submit"]');
         const originalText = submitButton.textContent;
         submitButton.textContent = 'Sending...';
         submitButton.disabled = true;
-        
+
         setTimeout(() => {
             showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
             form.reset();
@@ -500,7 +500,7 @@ function initializeScrambleAnimation() {
 
     const texts = config.scrambleAnimation.texts;
     let textIndex = 0;
-    
+
     const runScrambleAnimation = (newText) => {
         return new Promise((resolve) => {
             const chars = '!<>-_\\/[]{}—=+*^?#________';
@@ -512,7 +512,7 @@ function initializeScrambleAnimation() {
                 const start = Math.floor(Math.random() * 55), end = start + Math.floor(Math.random() * 55);
                 queue.push({ from, to, start, end, isSpace: to === ' ' || from === ' ' });
             }
-            
+
             const update = () => {
                 let output = '', complete = 0;
                 for (let i = 0, n = queue.length; i < n; i++) {
@@ -550,7 +550,7 @@ function initializeScrambleAnimation() {
 
 function updateYearsExperience() {
     const el = document.getElementById('years-experience');
-    if(el) el.textContent = new Date().getFullYear() - config.experience.startYear;
+    if (el) el.textContent = new Date().getFullYear() - config.experience.startYear;
 }
 
 function showNotification(message, type = 'info') {
@@ -592,7 +592,7 @@ function generateSkills() {
     if (!gridContainer || !template) return;
 
     // Clear any existing content to prevent duplication
-    gridContainer.innerHTML = ''; 
+    gridContainer.innerHTML = '';
 
     siteContent.skills.forEach(category => {
         const clone = template.content.cloneNode(true);
@@ -627,7 +627,7 @@ function generateSkills() {
         // Assemble the final structure and append it to the card
         outerWrapper.appendChild(innerTagHolder);
         categoryCard.appendChild(outerWrapper);
-        
+
         gridContainer.appendChild(clone);
     });
 }
@@ -660,7 +660,7 @@ function generateTestimonialColumns() {
     columnsData.forEach(testimonials => {
         const columnEl = document.createElement('div');
         columnEl.className = 'testimonials-scroller-column';
-        
+
         const innerEl = document.createElement('div');
         innerEl.className = 'testimonials-scroller-inner';
 
@@ -743,7 +743,7 @@ function initializeExpandableHighlights() {
     const handleInteraction = (event) => {
         // Find the parent highlight-item that was clicked or activated by key
         const highlightItem = event.target.closest('.highlight-item');
-        
+
         // Exit if the interaction was not on a highlight item
         if (!highlightItem) return;
 
@@ -751,7 +751,7 @@ function initializeExpandableHighlights() {
         if (event.type === 'keydown' && !['Enter', ' '].includes(event.key)) {
             return;
         }
-        
+
         event.preventDefault();
 
         const currentlyExpanded = container.querySelector('.expanded');
@@ -760,11 +760,11 @@ function initializeExpandableHighlights() {
         if (currentlyExpanded && currentlyExpanded !== highlightItem) {
             currentlyExpanded.classList.remove('expanded');
         }
-        
+
         // Toggle the active state of the interacted item
         highlightItem.classList.toggle('expanded');
     };
-    
+
     // Attach a single listener to the parent container for all clicks and key events
     container.addEventListener('click', handleInteraction);
     container.addEventListener('keydown', handleInteraction);
@@ -775,7 +775,7 @@ function initializeExpandableHighlights() {
         if (container.contains(event.target)) {
             return;
         }
-        
+
         // If the click was outside, find and close any expanded item.
         const currentlyExpanded = container.querySelector('.expanded');
         if (currentlyExpanded) {
@@ -837,7 +837,7 @@ function generateGanttChart() {
             li.innerHTML = `<span class="achievement-icon">${a.icon}</span><span>${a.text}</span>`;
             achievementsList.appendChild(li);
         });
-        
+
         fragment.appendChild(clone);
     });
 
