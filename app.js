@@ -195,8 +195,18 @@ function initializeSmartGlow() {
     const peakGlow = { size: 300, opacity: 0.8 };
     const glowColorRgb = '0, 212, 255';
 
+    let lastGlowScroll = -1;
+
     function updateGlow() {
         const scrollY = window.scrollY;
+        
+        // Fast abort to save performance if no scrolling occurred
+        if (scrollY === lastGlowScroll) {
+            requestAnimationFrame(updateGlow);
+            return;
+        }
+        lastGlowScroll = scrollY;
+        
         const navBottom = scrollY + navbar.offsetHeight;
 
         let prevTitle = null, nextTitle = null;
@@ -330,7 +340,11 @@ function initializeHeroVisuals() {
         return d + ' Z';
     }
 
+    let isHeroVisible = true;
+
     function animate() {
+        if (!isHeroVisible) return;
+
         // Increment both timers
         time += noiseSpeed;
         colorTime += colors.transitionSpeed;
@@ -407,7 +421,18 @@ function initializeHeroVisuals() {
     });
 
     blobGroup.style.transform = `translate(${centerX}px, ${centerY}px)`;
-    animate();
+    
+    // Check if the hero section is on screen to pause the expensive math loop
+    const heroObserver = new IntersectionObserver((entries) => {
+        const wasVisible = isHeroVisible;
+        isHeroVisible = entries[0].isIntersecting;
+        if (isHeroVisible && !wasVisible) {
+            requestAnimationFrame(animate); 
+        }
+    });
+    heroObserver.observe(heroSection);
+    
+    requestAnimationFrame(animate);
 }
 
 function initializePortfolioFilters() {
