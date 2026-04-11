@@ -1827,9 +1827,10 @@ section[id] {
 
 /* Footer */
 .footer {
-  background: var(--color-dark-secondary);
-  padding: var(--space-32) 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  padding: var(--space-20) 0;
+  border-top: 1px solid rgba(0, 212, 255, 0.15);
+  font-size: 0.9rem;
 }
 
 .footer-content {
@@ -1840,6 +1841,7 @@ section[id] {
 
 .footer-text {
   color: var(--color-text-secondary);
+  opacity: 0.8;
 }
 
 .footer-link {
