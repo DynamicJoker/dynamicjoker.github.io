@@ -1411,6 +1411,7 @@ section[id] {
     /* Start with the background and filter turned OFF */
     background: rgba(10, 10, 10, 0); /* Start fully transparent */
     backdrop-filter: blur(0px); /* Start with no blur */
+    -webkit-backdrop-filter: blur(0px);
     
     display: flex;
     flex-direction: column;
@@ -1438,8 +1439,9 @@ section[id] {
     visibility: visible;
 
     /* Turn the background and filter ON when active */
-    background: rgba(10, 10, 10, 0.8);
+    background: rgba(10, 10, 10, 0.95);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 
     /* The reverse transition is defined above, so no change needed here */
     transition: 
@@ -1461,6 +1463,10 @@ section[id] {
   .nav-menu.active .nav-link {
       opacity: 1;
       transform: translateY(0);
+  }
+
+  #nav-menu::after {
+      display: none;
   }
 
   /* Staggered animation for each link */
